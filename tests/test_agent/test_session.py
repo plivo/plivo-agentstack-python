@@ -58,15 +58,51 @@ async def test_hangup_enqueues():
     assert msg == {"type": "agent_session.hangup"}
 
 
-async def test_transfer_string_destination():
-    """transfer with a single string wraps it into a list."""
+async def test_transfer_to_number_string():
+    """transfer_to_number with a single string wraps it into a list."""
     session = _make_session()
-    session.transfer("+14155551234")
+    session.transfer_to_number("+14155551234")
     msg = await _drain(session)
     assert msg["type"] == "agent_session.transfer"
     assert msg["destination"] == ["+14155551234"]
     assert msg["dial_mode"] == "parallel"
     assert msg["timeout"] == 30
+
+
+async def test_transfer_to_number_list():
+    """transfer_to_number with a list passes destinations through."""
+    session = _make_session()
+    session.transfer_to_number(["+14155551234", "+18005559876"], dial_mode="sequential")
+    msg = await _drain(session)
+    assert msg["destination"] == ["+14155551234", "+18005559876"]
+    assert msg["dial_mode"] == "sequential"
+
+
+async def test_transfer_to_sip():
+    """transfer_to_sip sends SIP URI with sip flag."""
+    session = _make_session()
+    session.transfer_to_sip("sip:agent@phone.plivo.com")
+    msg = await _drain(session)
+    assert msg["type"] == "agent_session.transfer"
+    assert msg["destination"] == ["sip:agent@phone.plivo.com"]
+    assert msg["sip"] is True
+    assert msg["timeout"] == 30
+    assert "sip_headers" not in msg
+
+
+async def test_transfer_to_sip_with_headers():
+    """transfer_to_sip includes custom SIP headers when provided."""
+    session = _make_session()
+    session.transfer_to_sip(
+        "sip:agent@pbx.example.com",
+        sip_headers={"X-Agent-Id": "a42", "X-Context": "escalation"},
+        timeout=15,
+    )
+    msg = await _drain(session)
+    assert msg["destination"] == ["sip:agent@pbx.example.com"]
+    assert msg["sip"] is True
+    assert msg["sip_headers"] == {"X-Agent-Id": "a42", "X-Context": "escalation"}
+    assert msg["timeout"] == 15
 
 
 async def test_play_background_enqueues():

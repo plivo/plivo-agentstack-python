@@ -89,8 +89,8 @@ Sign up at [cx.plivo.com/signup](https://cx.plivo.com/signup) to get your `PLIVO
 - [**Background audio**](examples/background_audio.py) - ambient office/typing sounds mixed with agent speech
 - [**Pipeline modes**](examples/pipeline_modes.py) - all five config combinations in one file
 - [**Metrics & observability**](examples/metrics.py) - per-turn latency breakdown, VAD and turn events
-- [**SMS**](examples/send_sms.py) - send an SMS message
-- [**WhatsApp**](examples/whatsapp.py) - WhatsApp templates and interactive messages
+- [**SMS & MMS**](examples/send_sms.py) - text messages and MMS with media attachments
+- [**WhatsApp**](examples/whatsapp.py) - text, media, templates, buttons, lists, CTA, location
 - [**Buy a number**](examples/buy_number.py) - search and purchase a phone number
 - [**Callback server**](examples/callback_server.py) - FastAPI HTTP webhook receiver for call events
 - [**FastAPI integration**](examples/agent_fastapi.py) - embed VoiceApp inside an existing FastAPI app

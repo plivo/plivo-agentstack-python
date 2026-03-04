@@ -222,7 +222,7 @@ def on_tts_dtmf(session, event: Dtmf):
         session.speak("Your balance is forty two dollars and seventeen cents.")
     elif event.digit == "2":
         session.speak("Transferring you to an agent.")
-        session.transfer("+18005551234")
+        session.transfer_to_number("+18005551234")
     elif event.digit == "#":
         session.speak("Goodbye.")
         session.hangup()

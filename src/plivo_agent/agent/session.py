@@ -136,17 +136,17 @@ class Session:
             msg["allow_interruption"] = False
         self._enqueue(msg)
 
-    def transfer(
+    def transfer_to_number(
         self,
         destination: str | list[str],
         *,
         dial_mode: str = "parallel",
         timeout: int = 30,
     ) -> None:
-        """Transfer the call to one or more destinations.
+        """Transfer the call to one or more phone numbers.
 
         Args:
-            destination: Phone number or list of numbers.
+            destination: Phone number or list of numbers (E.164 format).
             dial_mode: "parallel" (ring all at once, first to answer wins)
                        or "sequential" (try each in order).
             timeout: Ring timeout per destination in seconds.
@@ -159,6 +159,33 @@ class Session:
             "dial_mode": dial_mode,
             "timeout": timeout,
         })
+
+    def transfer_to_sip(
+        self,
+        sip_uri: str,
+        *,
+        sip_headers: dict[str, str] | None = None,
+        timeout: int = 30,
+    ) -> None:
+        """Transfer the call to a SIP endpoint via Plivo Dial XML.
+
+        Plivo uses ``<Dial><User>sip_uri</User></Dial>`` internally.
+
+        Args:
+            sip_uri: SIP URI (e.g. ``"sip:agent@phone.plivo.com"``).
+            sip_headers: Optional custom SIP headers (alphanumeric keys,
+                         max 24 chars each).
+            timeout: Ring timeout in seconds.
+        """
+        msg: dict = {
+            "type": "agent_session.transfer",
+            "destination": [sip_uri],
+            "sip": True,
+            "timeout": timeout,
+        }
+        if sip_headers:
+            msg["sip_headers"] = sip_headers
+        self._enqueue(msg)
 
     def hangup(self) -> None:
         """End the call."""

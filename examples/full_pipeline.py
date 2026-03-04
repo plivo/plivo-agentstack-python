@@ -256,7 +256,7 @@ def on_tool_call(session, event: ToolCall):
 
     elif event.name == "transfer_to_human":
         session.speak("Let me transfer you to a specialist. One moment please.")
-        session.transfer("+18005551234")
+        session.transfer_to_number("+18005551234")
 
     elif event.name == "play_hold_music":
         session.play("hold_music.wav", allow_interruption=False)
