@@ -2,8 +2,8 @@
 
 [![PyPI version](https://img.shields.io/pypi/v/plivo_agent.svg)](https://pypi.org/project/plivo_agent/)
 [![Python 3.10+](https://img.shields.io/pypi/pyversions/plivo_agent.svg)](https://pypi.org/project/plivo_agent/)
-[![Tests](https://github.com/bevenky/plivo-agent-python/actions/workflows/tests.yml/badge.svg)](https://github.com/bevenky/plivo-agent-python/actions/workflows/tests.yml)
-[![codecov](https://codecov.io/gh/bevenky/plivo-agent-python/branch/main/graph/badge.svg)](https://codecov.io/gh/bevenky/plivo-agent-python)
+[![Tests](https://github.com/plivo/plivo-agent-python/actions/workflows/tests.yml/badge.svg)](https://github.com/plivo/plivo-agent-python/actions/workflows/tests.yml)
+[![codecov](https://codecov.io/gh/plivo/plivo-agent-python/branch/main/graph/badge.svg)](https://codecov.io/gh/plivo/plivo-agent-python)
 [![License: MIT](https://img.shields.io/badge/License-MIT-blue.svg)](LICENSE)
 
 Plivo Programmable Agents SDK - Build AI Agents that work over voice calls, SMS/WhatsApp programmatically.
