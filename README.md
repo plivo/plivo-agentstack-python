@@ -18,7 +18,7 @@ The SDK supports every Voice AI Agent configuration. Behavior is determined by w
 | `stt` + `llm` + `tts` | **Full AI** -- Plivo runs the entire voice pipeline | Tool calls and flow control |
 | `stt` + `tts` | **BYOLLM** -- Plivo handles speech, you bring your own LLM | LLM inference, stream tokens back via `send_text()` |
 | `s2s` | **Speech-to-speech** -- single provider handles STT+LLM+TTS natively | Event handling (OpenAI Realtime, Gemini Live) |
-| _(none)_ | **Raw audio** -- Plivo is a telephony bridge | Everything (your own STT, LLM, TTS, VAD) |
+| _(none)_ | **Audio stream** -- Plivo is a telephony bridge | Everything (your own STT, LLM, TTS, VAD) |
 
 ### Call flow
 
