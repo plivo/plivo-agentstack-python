@@ -11,8 +11,8 @@ CALL_UUID = "call-uuid-001"
 
 
 async def test_create_agent(mock_api, http_transport):
-    """POST /v1/Agent creates an agent."""
-    mock_api.post("/v1/Agent").mock(
+    """POST /v1/Account/TESTAUTH123/Agent creates an agent."""
+    mock_api.post("/v1/Account/TESTAUTH123/Agent").mock(
         return_value=httpx.Response(
             200,
             json={"agent_uuid": AGENT_UUID, "agent_name": "My Agent"},
@@ -25,8 +25,8 @@ async def test_create_agent(mock_api, http_transport):
 
 
 async def test_get_agent(mock_api, http_transport):
-    """GET /v1/Agent/{uuid} retrieves an agent."""
-    mock_api.get(f"/v1/Agent/{AGENT_UUID}").mock(
+    """GET /v1/Account/TESTAUTH123/Agent/{uuid} retrieves an agent."""
+    mock_api.get(f"/v1/Account/TESTAUTH123/Agent/{AGENT_UUID}").mock(
         return_value=httpx.Response(
             200,
             json={"agent_uuid": AGENT_UUID, "agent_name": "My Agent"},
@@ -38,8 +38,8 @@ async def test_get_agent(mock_api, http_transport):
 
 
 async def test_list_agents(mock_api, http_transport):
-    """GET /v1/Agent lists agents with query params."""
-    mock_api.get("/v1/Agent").mock(
+    """GET /v1/Account/TESTAUTH123/Agent lists agents with query params."""
+    mock_api.get("/v1/Account/TESTAUTH123/Agent").mock(
         return_value=httpx.Response(
             200,
             json={"data": [{"agent_uuid": AGENT_UUID}], "meta": {"total": 1}},
@@ -52,8 +52,8 @@ async def test_list_agents(mock_api, http_transport):
 
 
 async def test_update_agent(mock_api, http_transport):
-    """PATCH /v1/Agent/{uuid} updates an agent."""
-    mock_api.patch(f"/v1/Agent/{AGENT_UUID}").mock(
+    """PATCH /v1/Account/TESTAUTH123/Agent/{uuid} updates an agent."""
+    mock_api.patch(f"/v1/Account/TESTAUTH123/Agent/{AGENT_UUID}").mock(
         return_value=httpx.Response(
             200,
             json={"agent_uuid": AGENT_UUID, "agent_name": "Updated Agent"},
@@ -65,8 +65,8 @@ async def test_update_agent(mock_api, http_transport):
 
 
 async def test_delete_agent(mock_api, http_transport):
-    """DELETE /v1/Agent/{uuid} deletes an agent (204)."""
-    mock_api.delete(f"/v1/Agent/{AGENT_UUID}").mock(
+    """DELETE /v1/Account/TESTAUTH123/Agent/{uuid} deletes an agent (204)."""
+    mock_api.delete(f"/v1/Account/TESTAUTH123/Agent/{AGENT_UUID}").mock(
         return_value=httpx.Response(204)
     )
     client = AgentClient(http_transport)
@@ -75,8 +75,8 @@ async def test_delete_agent(mock_api, http_transport):
 
 
 async def test_call_initiate(mock_api, http_transport):
-    """POST /v1/AgentCall initiates an outbound call."""
-    mock_api.post("/v1/AgentCall").mock(
+    """POST /v1/Account/TESTAUTH123/AgentCall initiates an outbound call."""
+    mock_api.post("/v1/Account/TESTAUTH123/AgentCall").mock(
         return_value=httpx.Response(
             200,
             json={"call_uuid": CALL_UUID, "status": "initiated"},
@@ -93,8 +93,8 @@ async def test_call_initiate(mock_api, http_transport):
 
 
 async def test_call_connect(mock_api, http_transport):
-    """POST /v1/AgentCall/{uuid}/connect connects a call to an agent."""
-    mock_api.post(f"/v1/AgentCall/{CALL_UUID}/connect").mock(
+    """POST /v1/Account/TESTAUTH123/AgentCall/{uuid}/connect connects a call to an agent."""
+    mock_api.post(f"/v1/Account/TESTAUTH123/AgentCall/{CALL_UUID}/connect").mock(
         return_value=httpx.Response(
             200,
             json={"status": "connected"},
@@ -106,8 +106,8 @@ async def test_call_connect(mock_api, http_transport):
 
 
 async def test_number_assign(mock_api, http_transport):
-    """POST /v1/Agent/{uuid}/Number assigns a number to an agent."""
-    mock_api.post(f"/v1/Agent/{AGENT_UUID}/Number").mock(
+    """POST /v1/Account/TESTAUTH123/Agent/{uuid}/Number assigns a number to an agent."""
+    mock_api.post(f"/v1/Account/TESTAUTH123/Agent/{AGENT_UUID}/Number").mock(
         return_value=httpx.Response(
             200,
             json={"status": "assigned", "number": "+14155551234"},
@@ -120,9 +120,9 @@ async def test_number_assign(mock_api, http_transport):
 
 
 async def test_number_unassign(mock_api, http_transport):
-    """DELETE /v1/Agent/{uuid}/Number/{num} unassigns a number."""
+    """DELETE /v1/Account/TESTAUTH123/Agent/{uuid}/Number/{num} unassigns a number."""
     number = "+14155551234"
-    mock_api.delete(f"/v1/Agent/{AGENT_UUID}/Number/{number}").mock(
+    mock_api.delete(f"/v1/Account/TESTAUTH123/Agent/{AGENT_UUID}/Number/{number}").mock(
         return_value=httpx.Response(204)
     )
     client = AgentClient(http_transport)
@@ -134,8 +134,8 @@ SESSION_ID = "sess-001"
 
 
 async def test_session_list(mock_api, http_transport):
-    """GET /v1/Agent/{uuid}/Session lists sessions."""
-    mock_api.get(f"/v1/Agent/{AGENT_UUID}/Session").mock(
+    """GET /v1/Account/TESTAUTH123/Agent/{uuid}/Session lists sessions."""
+    mock_api.get(f"/v1/Account/TESTAUTH123/Agent/{AGENT_UUID}/Session").mock(
         return_value=httpx.Response(
             200,
             json={
@@ -153,8 +153,8 @@ async def test_session_list(mock_api, http_transport):
 
 
 async def test_session_get(mock_api, http_transport):
-    """GET /v1/Agent/{uuid}/Session/{session_id} gets session details."""
-    mock_api.get(f"/v1/Agent/{AGENT_UUID}/Session/{SESSION_ID}").mock(
+    """GET /v1/Account/TESTAUTH123/Agent/{uuid}/Session/{session_id} gets session details."""
+    mock_api.get(f"/v1/Account/TESTAUTH123/Agent/{AGENT_UUID}/Session/{SESSION_ID}").mock(
         return_value=httpx.Response(
             200,
             json={

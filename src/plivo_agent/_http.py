@@ -67,6 +67,10 @@ class HttpTransport:
     def auth_id(self) -> str:
         return self._auth_id
 
+    @property
+    def agents_base_url(self) -> str:
+        return f"{self._base_url}/v1/Account/{self._auth_id}"
+
     async def request(
         self,
         method: str,

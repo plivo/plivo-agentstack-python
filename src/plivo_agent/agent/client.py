@@ -12,59 +12,61 @@ from plivo_agent._http import HttpTransport
 
 
 class AgentResource:
-    """Agent CRUD -- POST/GET/PATCH/DELETE /v1/Agent
+    """Agent CRUD -- POST/GET/PATCH/DELETE /Agent
 
     Agent IDs are UUIDs (e.g. "550e8400-e29b-41d4-a716-446655440000").
     Creating an agent requires ``agent_name``.
     """
 
-    def __init__(self, http: HttpTransport) -> None:
+    def __init__(self, http: HttpTransport, prefix: str) -> None:
         self._http = http
+        self._prefix = prefix
 
     async def create(self, **kwargs: Any) -> dict:
-        """POST /v1/Agent
+        """POST /Agent
 
         Required fields: ``agent_name``, ``websocket_url``.
         Returns the created agent with ``agent_uuid`` as the identifier.
         """
-        return await self._http.request("POST", "/v1/Agent", json=kwargs)
+        return await self._http.request("POST", f"{self._prefix}/Agent", json=kwargs)
 
     async def get(self, agent_uuid: str) -> dict:
-        """GET /v1/Agent/{agent_uuid}"""
-        return await self._http.request("GET", f"/v1/Agent/{agent_uuid}")
+        """GET /Agent/{agent_uuid}"""
+        return await self._http.request("GET", f"{self._prefix}/Agent/{agent_uuid}")
 
     async def list(self, **params: Any) -> dict:
-        """GET /v1/Agent -- paginated list.
+        """GET /Agent -- paginated list.
 
         Optional query params: page, per_page, sort_by, sort_order,
         agent_mode, participant_mode.
 
         Returns ``{"data": [...], "meta": {"page", "per_page", "total", "total_pages"}}``.
         """
-        return await self._http.request("GET", "/v1/Agent", params=params)
+        return await self._http.request("GET", f"{self._prefix}/Agent", params=params)
 
     async def update(self, agent_uuid: str, **kwargs: Any) -> dict:
-        """PATCH /v1/Agent/{agent_uuid}"""
+        """PATCH /Agent/{agent_uuid}"""
         return await self._http.request(
-            "PATCH", f"/v1/Agent/{agent_uuid}", json=kwargs
+            "PATCH", f"{self._prefix}/Agent/{agent_uuid}", json=kwargs
         )
 
     async def delete(self, agent_uuid: str) -> None:
-        """DELETE /v1/Agent/{agent_uuid}"""
-        await self._http.request("DELETE", f"/v1/Agent/{agent_uuid}")
+        """DELETE /Agent/{agent_uuid}"""
+        await self._http.request("DELETE", f"{self._prefix}/Agent/{agent_uuid}")
 
 
 class CallResource:
     """Call management -- connect, initiate, dial."""
 
-    def __init__(self, http: HttpTransport) -> None:
+    def __init__(self, http: HttpTransport, prefix: str) -> None:
         self._http = http
+        self._prefix = prefix
 
     async def connect(self, call_uuid: str, agent_uuid: str) -> dict:
-        """POST /v1/AgentCall/{call_uuid}/connect -- connect an active call to an agent."""
+        """POST /AgentCall/{call_uuid}/connect -- connect an active call to an agent."""
         return await self._http.request(
             "POST",
-            f"/v1/AgentCall/{call_uuid}/connect",
+            f"{self._prefix}/AgentCall/{call_uuid}/connect",
             json={"agent_id": agent_uuid},
         )
 
@@ -77,7 +79,7 @@ class CallResource:
         voicemail_detect: bool = False,
         **kwargs: Any,
     ) -> dict:
-        """POST /v1/AgentCall -- initiate an outbound call.
+        """POST /AgentCall -- initiate an outbound call.
 
         Args:
             agent_uuid: Agent UUID to handle the call.
@@ -93,7 +95,7 @@ class CallResource:
         if voicemail_detect:
             body["voicemail_detect"] = True
         body.update(kwargs)
-        return await self._http.request("POST", "/v1/AgentCall", json=body)
+        return await self._http.request("POST", f"{self._prefix}/AgentCall", json=body)
 
     async def dial(
         self,
@@ -101,7 +103,7 @@ class CallResource:
         targets: list[dict],
         **kwargs: Any,
     ) -> dict:
-        """POST /v1/AgentCall/{call_uuid}/dial -- dial out to one or more targets.
+        """POST /AgentCall/{call_uuid}/dial -- dial out to one or more targets.
 
         Args:
             call_uuid: Active call UUID.
@@ -110,7 +112,7 @@ class CallResource:
         """
         body: dict[str, Any] = {"targets": targets, **kwargs}
         return await self._http.request(
-            "POST", f"/v1/AgentCall/{call_uuid}/dial", json=body
+            "POST", f"{self._prefix}/AgentCall/{call_uuid}/dial", json=body
         )
 
 
@@ -120,49 +122,51 @@ class NumberResource:
     Numbers are in E.164 format (e.g. "+14155551234").
     """
 
-    def __init__(self, http: HttpTransport) -> None:
+    def __init__(self, http: HttpTransport, prefix: str) -> None:
         self._http = http
+        self._prefix = prefix
 
     async def assign(self, agent_uuid: str, number: str) -> dict:
-        """POST /v1/Agent/{agent_uuid}/Number -- assign a number to an agent."""
+        """POST /Agent/{agent_uuid}/Number -- assign a number to an agent."""
         return await self._http.request(
             "POST",
-            f"/v1/Agent/{agent_uuid}/Number",
+            f"{self._prefix}/Agent/{agent_uuid}/Number",
             json={"number": number},
         )
 
     async def list(self, agent_uuid: str) -> dict:
-        """GET /v1/Agent/{agent_uuid}/Number -- list numbers for an agent."""
+        """GET /Agent/{agent_uuid}/Number -- list numbers for an agent."""
         return await self._http.request(
-            "GET", f"/v1/Agent/{agent_uuid}/Number"
+            "GET", f"{self._prefix}/Agent/{agent_uuid}/Number"
         )
 
     async def unassign(self, agent_uuid: str, number: str) -> None:
-        """DELETE /v1/Agent/{agent_uuid}/Number/{number} -- unassign a number."""
+        """DELETE /Agent/{agent_uuid}/Number/{number} -- unassign a number."""
         await self._http.request(
-            "DELETE", f"/v1/Agent/{agent_uuid}/Number/{number}"
+            "DELETE", f"{self._prefix}/Agent/{agent_uuid}/Number/{number}"
         )
 
 
 class SessionResource:
     """Session history -- list and get agent sessions."""
 
-    def __init__(self, http: HttpTransport) -> None:
+    def __init__(self, http: HttpTransport, prefix: str) -> None:
         self._http = http
+        self._prefix = prefix
 
     async def list(self, agent_uuid: str, **params: Any) -> dict:
-        """GET /v1/Agent/{agent_uuid}/Session -- list sessions.
+        """GET /Agent/{agent_uuid}/Session -- list sessions.
 
         Optional query params: page, per_page, sort_by, sort_order, agent_mode.
         """
         return await self._http.request(
-            "GET", f"/v1/Agent/{agent_uuid}/Session", params=params
+            "GET", f"{self._prefix}/Agent/{agent_uuid}/Session", params=params
         )
 
     async def get(self, agent_uuid: str, session_id: str) -> dict:
-        """GET /v1/Agent/{agent_uuid}/Session/{session_id} -- get session details."""
+        """GET /Agent/{agent_uuid}/Session/{session_id} -- get session details."""
         return await self._http.request(
-            "GET", f"/v1/Agent/{agent_uuid}/Session/{session_id}"
+            "GET", f"{self._prefix}/Agent/{agent_uuid}/Session/{session_id}"
         )
 
 
@@ -178,7 +182,8 @@ class AgentClient:
 
     def __init__(self, http: HttpTransport) -> None:
         self._http = http
-        self.agents = AgentResource(http)
-        self.calls = CallResource(http)
-        self.numbers = NumberResource(http)
-        self.sessions = SessionResource(http)
+        prefix = f"/v1/Account/{http.auth_id}"
+        self.agents = AgentResource(http, prefix)
+        self.calls = CallResource(http, prefix)
+        self.numbers = NumberResource(http, prefix)
+        self.sessions = SessionResource(http, prefix)
