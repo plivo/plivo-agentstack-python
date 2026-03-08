@@ -1,4 +1,4 @@
-"""Tests for plivo_agent.utils — webhook signature validation."""
+"""Tests for plivo_agentstack.utils — webhook signature validation."""
 
 from __future__ import annotations
 
@@ -6,7 +6,7 @@ import base64
 import hashlib
 import hmac
 
-from plivo_agent.utils import validate_signature_v3
+from plivo_agentstack.utils import validate_signature_v3
 
 AUTH_TOKEN = "my_secret_token"
 

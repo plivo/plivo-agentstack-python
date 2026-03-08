@@ -13,7 +13,7 @@ import json
 import logging
 from typing import Any
 
-logger = logging.getLogger("plivo_agent.agent.session")
+logger = logging.getLogger("plivo_agentstack.agent.session")
 
 
 class Session:

@@ -4,7 +4,7 @@ Mounts the VoiceApp WebSocket handler inside a FastAPI application,
 allowing you to combine voice agent endpoints with REST routes.
 
 Prerequisites:
-    pip install plivo_agent[all] fastapi uvicorn
+    pip install plivo_agentstack[all] fastapi uvicorn
 
 Run:
     uvicorn agent_fastapi:fastapi_app --port 9000
@@ -14,7 +14,7 @@ import logging
 
 from fastapi import FastAPI, WebSocket
 
-from plivo_agent.agent import (
+from plivo_agentstack.agent import (
     AgentSessionEnded,
     AgentSessionStarted,
     ToolCall,

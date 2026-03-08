@@ -1,8 +1,8 @@
-"""Tests for plivo_agent.agent.events — event parsing and typed models."""
+"""Tests for plivo_agentstack.agent.events — event parsing and typed models."""
 
 from __future__ import annotations
 
-from plivo_agent.agent.events import (
+from plivo_agentstack.agent.events import (
     _EVENT_REGISTRY,
     AgentSessionStarted,
     Dtmf,

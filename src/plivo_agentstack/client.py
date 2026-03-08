@@ -5,7 +5,7 @@ from __future__ import annotations
 import os
 from typing import Any
 
-from plivo_agent._http import HttpTransport
+from plivo_agentstack._http import HttpTransport
 
 
 class AsyncClient:
@@ -56,7 +56,7 @@ class AsyncClient:
     def agent(self):
         """Agent Stack REST client."""
         if self._agent is None:
-            from plivo_agent.agent.client import AgentClient
+            from plivo_agentstack.agent.client import AgentClient
 
             self._agent = AgentClient(self._http)
         return self._agent
@@ -65,7 +65,7 @@ class AsyncClient:
     def messages(self):
         """Messages REST client."""
         if self._messages is None:
-            from plivo_agent.messaging.client import MessagesClient
+            from plivo_agentstack.messaging.client import MessagesClient
 
             self._messages = MessagesClient(self._http)
         return self._messages
@@ -74,7 +74,7 @@ class AsyncClient:
     def numbers(self):
         """Numbers REST client."""
         if self._numbers is None:
-            from plivo_agent.numbers.client import NumbersClient
+            from plivo_agentstack.numbers.client import NumbersClient
 
             self._numbers = NumbersClient(self._http)
         return self._numbers

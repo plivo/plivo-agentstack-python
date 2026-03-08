@@ -1,12 +1,12 @@
-"""Shared test fixtures for the plivo_agent SDK test suite."""
+"""Shared test fixtures for the plivo_agentstack SDK test suite."""
 
 from __future__ import annotations
 
 import pytest
 import respx
 
-from plivo_agent._http import HttpTransport
-from plivo_agent.client import AsyncClient
+from plivo_agentstack._http import HttpTransport
+from plivo_agentstack.client import AsyncClient
 
 AUTH_ID = "TESTAUTH123"
 AUTH_TOKEN = "test_token_secret"

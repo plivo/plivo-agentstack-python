@@ -2,7 +2,7 @@
 
 Usage (standalone)::
 
-    from plivo_agent.agent import VoiceApp, ToolCall
+    from plivo_agentstack.agent import VoiceApp, ToolCall
 
     app = VoiceApp()
 
@@ -15,7 +15,7 @@ Usage (standalone)::
 Usage (FastAPI integration)::
 
     from fastapi import FastAPI, WebSocket
-    from plivo_agent.agent import VoiceApp, ToolCall
+    from plivo_agentstack.agent import VoiceApp, ToolCall
 
     fastapi_app = FastAPI()
     voice = VoiceApp()
@@ -30,9 +30,9 @@ Usage (FastAPI integration)::
         await voice.handle_fastapi(websocket)
 """
 
-from plivo_agent.agent.app import VoiceApp
-from plivo_agent.agent.client import AgentClient
-from plivo_agent.agent.events import (
+from plivo_agentstack.agent.app import VoiceApp
+from plivo_agentstack.agent.client import AgentClient
+from plivo_agentstack.agent.events import (
     AgentHandoff,
     AgentSessionEnded,
     AgentSessionStarted,
@@ -61,7 +61,7 @@ from plivo_agent.agent.events import (
     VoicemailDetected,
     parse_event,
 )
-from plivo_agent.agent.session import Session
+from plivo_agentstack.agent.session import Session
 
 __all__ = [
     # Core

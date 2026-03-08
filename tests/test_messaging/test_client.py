@@ -1,10 +1,10 @@
-"""Tests for plivo_agent.messaging.client — MessagesClient REST operations."""
+"""Tests for plivo_agentstack.messaging.client — MessagesClient REST operations."""
 
 from __future__ import annotations
 
 import httpx
 
-from plivo_agent.messaging.client import MessagesClient
+from plivo_agentstack.messaging.client import MessagesClient
 
 AUTH_ID = "TESTAUTH123"
 MSG_UUID = "msg-uuid-001"

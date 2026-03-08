@@ -1,10 +1,10 @@
-"""Tests for plivo_agent.numbers.client — NumbersClient REST operations."""
+"""Tests for plivo_agentstack.numbers.client — NumbersClient REST operations."""
 
 from __future__ import annotations
 
 import httpx
 
-from plivo_agent.numbers.client import NumbersClient
+from plivo_agentstack.numbers.client import NumbersClient
 
 AUTH_ID = "TESTAUTH123"
 NUMBER = "+14155551234"

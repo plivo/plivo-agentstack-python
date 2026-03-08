@@ -5,11 +5,11 @@ Receives transcription prompts from Plivo, echoes them back as text tokens.
 This lets you trace the full STT -> customer WS -> TTS flow with fake API keys.
 
 Usage:
-  1. pip install plivo_agent[all]
+  1. pip install plivo_agentstack[all]
   2. python byollm_echo.py
 """
 
-from plivo_agent.agent import (
+from plivo_agentstack.agent import (
     AgentSessionEnded,
     AgentSessionStarted,
     Error,

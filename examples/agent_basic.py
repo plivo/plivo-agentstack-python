@@ -4,7 +4,7 @@ Creates an agent via the REST API, then runs a WebSocket server that
 handles tool calls during live voice sessions.
 
 Prerequisites:
-    pip install plivo_agent[all]
+    pip install plivo_agentstack[all]
 
 Environment variables:
     PLIVO_AUTH_ID      -- Your Plivo auth ID
@@ -18,8 +18,8 @@ import asyncio
 import logging
 import os
 
-from plivo_agent import AsyncClient
-from plivo_agent.agent import (
+from plivo_agentstack import AsyncClient
+from plivo_agentstack.agent import (
     AgentSessionEnded,
     AgentSessionStarted,
     ToolCall,

@@ -5,7 +5,7 @@ Demonstrates every WhatsApp message type supported by the SDK:
 text, media, template, interactive buttons, list, CTA URL, and location.
 
 Usage:
-  1. pip install plivo_agent
+  1. pip install plivo_agentstack
   2. Set PLIVO_AUTH_ID, PLIVO_AUTH_TOKEN env vars
   3. python whatsapp.py [text | media | template | buttons | list | cta | location]
 """
@@ -13,8 +13,8 @@ Usage:
 import asyncio
 import sys
 
-from plivo_agent import AsyncClient
-from plivo_agent.messaging import InteractiveMessage, Location, Template
+from plivo_agentstack import AsyncClient
+from plivo_agentstack.messaging import InteractiveMessage, Location, Template
 
 SRC = "+14155551234"  # your WhatsApp Business number
 DST = "+14155559876"  # recipient

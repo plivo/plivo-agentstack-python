@@ -30,7 +30,7 @@ Volume levels:
   1.0      Full volume (use sparingly)
 
 Usage:
-  1. pip install plivo_agent[all]
+  1. pip install plivo_agentstack[all]
   2. Set PLIVO_AUTH_ID, PLIVO_AUTH_TOKEN env vars
   3. python background_audio.py
 """
@@ -38,8 +38,8 @@ Usage:
 import asyncio
 import os
 
-from plivo_agent import AsyncClient
-from plivo_agent.agent import (
+from plivo_agentstack import AsyncClient
+from plivo_agentstack.agent import (
     AgentSessionEnded,
     AgentSessionStarted,
     ToolCall,

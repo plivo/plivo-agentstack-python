@@ -1,7 +1,7 @@
 """Plivo Python SDK — async-first, with Voice AI Agent support."""
 
-from plivo_agent.client import AsyncClient
-from plivo_agent.errors import (
+from plivo_agentstack.client import AsyncClient
+from plivo_agentstack.errors import (
     AuthenticationError,
     ForbiddenError,
     NotFoundError,

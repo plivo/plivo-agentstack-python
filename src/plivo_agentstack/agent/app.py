@@ -30,10 +30,10 @@ from typing import Any, Callable
 
 import websockets
 
-from plivo_agent.agent.events import parse_event
-from plivo_agent.agent.session import Session
+from plivo_agentstack.agent.events import parse_event
+from plivo_agentstack.agent.session import Session
 
-logger = logging.getLogger("plivo_agent.agent.app")
+logger = logging.getLogger("plivo_agentstack.agent.app")
 
 
 class VoiceApp:

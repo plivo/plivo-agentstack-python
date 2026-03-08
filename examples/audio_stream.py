@@ -34,7 +34,7 @@ Protocol (Plivo Audio Streaming):
     - clearAudio: Clear all queued audio (for interruption)
 
 Usage:
-  1. pip install plivo_agent[all]
+  1. pip install plivo_agentstack[all]
   2. Set PLIVO_AUTH_ID, PLIVO_AUTH_TOKEN env vars
   3. python audio_stream.py
 """
@@ -43,8 +43,8 @@ import asyncio
 import os
 import time
 
-from plivo_agent import AsyncClient
-from plivo_agent.agent import (
+from plivo_agentstack import AsyncClient
+from plivo_agentstack.agent import (
     AgentSessionEnded,
     AgentSessionStarted,
     ClearedAudio,

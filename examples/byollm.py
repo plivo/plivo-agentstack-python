@@ -20,7 +20,7 @@ Providers:
   LLM:  OpenAI GPT-4.1-mini  (your API key, your code)
 
 Usage:
-  1. pip install plivo_agent[all] openai
+  1. pip install plivo_agentstack[all] openai
   2. Set PLIVO_AUTH_ID, PLIVO_AUTH_TOKEN, OPENAI_API_KEY env vars
   3. python byollm.py
 """
@@ -30,8 +30,8 @@ import os
 
 from openai import AsyncOpenAI
 
-from plivo_agent import AsyncClient
-from plivo_agent.agent import (
+from plivo_agentstack import AsyncClient
+from plivo_agentstack.agent import (
     AgentSessionEnded,
     AgentSessionStarted,
     Dtmf,

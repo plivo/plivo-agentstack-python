@@ -1,11 +1,11 @@
-"""Tests for plivo_agent.agent.session.Session."""
+"""Tests for plivo_agentstack.agent.session.Session."""
 
 from __future__ import annotations
 
 import asyncio
 from unittest.mock import MagicMock
 
-from plivo_agent.agent.session import Session
+from plivo_agentstack.agent.session import Session
 
 
 def _make_session() -> Session:

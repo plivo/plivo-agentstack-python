@@ -1,12 +1,12 @@
-"""Tests for plivo_agent._http.HttpTransport."""
+"""Tests for plivo_agentstack._http.HttpTransport."""
 
 from __future__ import annotations
 
 import httpx
 import pytest
 
-from plivo_agent._http import HttpTransport
-from plivo_agent.errors import (
+from plivo_agentstack._http import HttpTransport
+from plivo_agentstack.errors import (
     AuthenticationError,
     NotFoundError,
     ServerError,

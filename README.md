@@ -1,9 +1,9 @@
-# Plivo Agent Python SDK
+# Plivo AgentStack Python SDK
 
-[![PyPI version](https://img.shields.io/pypi/v/plivo_agent.svg)](https://pypi.org/project/plivo_agent/)
-[![Python 3.10+](https://img.shields.io/pypi/pyversions/plivo_agent.svg)](https://pypi.org/project/plivo_agent/)
-[![Tests](https://github.com/plivo/plivo-agent-python/actions/workflows/tests.yml/badge.svg)](https://github.com/plivo/plivo-agent-python/actions/workflows/tests.yml)
-[![codecov](https://codecov.io/gh/plivo/plivo-agent-python/branch/main/graph/badge.svg)](https://codecov.io/gh/plivo/plivo-agent-python)
+[![PyPI version](https://img.shields.io/pypi/v/plivo_agentstack.svg)](https://pypi.org/project/plivo_agentstack/)
+[![Python 3.10+](https://img.shields.io/pypi/pyversions/plivo_agentstack.svg)](https://pypi.org/project/plivo_agentstack/)
+[![Tests](https://github.com/plivo/plivo-agentstack-python/actions/workflows/tests.yml/badge.svg)](https://github.com/plivo/plivo-agentstack-python/actions/workflows/tests.yml)
+[![codecov](https://codecov.io/gh/plivo/plivo-agentstack-python/branch/main/graph/badge.svg)](https://codecov.io/gh/plivo/plivo-agentstack-python)
 [![License: MIT](https://img.shields.io/badge/License-MIT-blue.svg)](LICENSE)
 
 Plivo Programmable Agents SDK - Build AI Agents that work over voice calls, SMS/WhatsApp programmatically.
@@ -71,7 +71,7 @@ Inbound/Outbound Call
 ## Installation
 
 ```bash
-pip install plivo_agent
+pip install plivo_agentstack
 ```
 
 Requires Python 3.10+.
@@ -98,8 +98,8 @@ Sign up at [cx.plivo.com/signup](https://cx.plivo.com/signup) to get your `PLIVO
 ## Development
 
 ```bash
-git clone https://github.com/plivo/plivo-agent-python.git
-cd plivo-agent-python
+git clone https://github.com/plivo/plivo-agentstack-python.git
+cd plivo-agentstack-python
 python -m venv .venv && source .venv/bin/activate
 pip install -e ".[dev]"
 pytest tests/ -v          # 70 tests

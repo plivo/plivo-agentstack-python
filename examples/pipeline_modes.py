@@ -19,7 +19,7 @@ The key insight: omit a config to handle that component yourself.
 VAD and turn detection always run when any config is present.
 
 Usage:
-  1. pip install plivo_agent[all] openai
+  1. pip install plivo_agentstack[all] openai
   2. Set PLIVO_AUTH_ID, PLIVO_AUTH_TOKEN env vars
   3. python pipeline_modes.py [full-ai | customer-llm | stt-only | tts-only | raw-audio]
 """
@@ -28,8 +28,8 @@ import asyncio
 import base64
 import os
 
-from plivo_agent import AsyncClient
-from plivo_agent.agent import (
+from plivo_agentstack import AsyncClient
+from plivo_agentstack.agent import (
     AgentSessionEnded,
     AgentSessionStarted,
     Dtmf,

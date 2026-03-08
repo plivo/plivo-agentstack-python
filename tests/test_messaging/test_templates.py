@@ -1,8 +1,8 @@
-"""Tests for plivo_agent.messaging.templates — Template builder."""
+"""Tests for plivo_agentstack.messaging.templates — Template builder."""
 
 from __future__ import annotations
 
-from plivo_agent.messaging.templates import Template
+from plivo_agentstack.messaging.templates import Template
 
 
 def test_basic_template():

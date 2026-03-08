@@ -1,10 +1,10 @@
-"""Tests for plivo_agent.agent.client — AgentClient REST operations."""
+"""Tests for plivo_agentstack.agent.client — AgentClient REST operations."""
 
 from __future__ import annotations
 
 import httpx
 
-from plivo_agent.agent.client import AgentClient
+from plivo_agentstack.agent.client import AgentClient
 
 AGENT_UUID = "550e8400-e29b-41d4-a716-446655440000"
 CALL_UUID = "call-uuid-001"

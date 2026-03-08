@@ -20,7 +20,7 @@ Providers:
   TTS:  ElevenLabs Flash v2.5
 
 Usage:
-  1. pip install plivo_agent[all]
+  1. pip install plivo_agentstack[all]
   2. Set PLIVO_AUTH_ID, PLIVO_AUTH_TOKEN env vars
   3. python multi_party.py
 """
@@ -28,8 +28,8 @@ Usage:
 import asyncio
 import os
 
-from plivo_agent import AsyncClient
-from plivo_agent.agent import (
+from plivo_agentstack import AsyncClient
+from plivo_agentstack.agent import (
     AgentSessionEnded,
     AgentSessionStarted,
     Interruption,

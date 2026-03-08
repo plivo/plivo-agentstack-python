@@ -1,13 +1,13 @@
-# CLAUDE.md — plivo-agent-python
+# CLAUDE.md — plivo-agentstack-python
 
 ## Project overview
 
-Async-first Python SDK for Plivo (`plivo_agent`). Covers Voice AI Agents (WebSocket + REST), Messaging (SMS/MMS/WhatsApp), and Numbers. Python 3.10+, built with `hatchling`.
+Async-first Python SDK for Plivo (`plivo_agentstack`). Covers Voice AI Agents (WebSocket + REST), Messaging (SMS/MMS/WhatsApp), and Numbers. Python 3.10+, built with `hatchling`.
 
 ## Repository layout
 
 ```
-src/plivo_agent/
+src/plivo_agentstack/
   __init__.py          # Public exports: AsyncClient, errors
   client.py            # AsyncClient entry point
   _http.py             # HttpTransport — retry, auth, error mapping
@@ -78,5 +78,5 @@ ruff check src/ tests/        # lint
 
 - New REST resources: add to the appropriate sub-client (`agent/client.py`, `messaging/client.py`, `numbers/client.py`), wire into the parent client, add tests with `respx` mocks
 - New WebSocket events: add a `@dataclass` to `agent/events.py`, register in `_EVENT_REGISTRY`, add parse test in `test_events.py`
-- New examples: add to `examples/`, use `from plivo_agent import AsyncClient` and `from plivo_agent.agent import VoiceApp, ...` pattern. Update README Quick start section
+- New examples: add to `examples/`, use `from plivo_agentstack import AsyncClient` and `from plivo_agentstack.agent import VoiceApp, ...` pattern. Update README Quick start section
 - Keep dependencies minimal — core deps are `httpx`, `websockets`, `starlette` only

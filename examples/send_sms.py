@@ -5,7 +5,7 @@ Demonstrates sending SMS (text only) and MMS (with media attachments)
 using the Plivo Agent SDK.
 
 Usage:
-  1. pip install plivo_agent
+  1. pip install plivo_agentstack
   2. Set PLIVO_AUTH_ID, PLIVO_AUTH_TOKEN env vars
   3. python send_sms.py [sms | mms | mms-multi]
 """
@@ -13,7 +13,7 @@ Usage:
 import asyncio
 import sys
 
-from plivo_agent import AsyncClient
+from plivo_agentstack import AsyncClient
 
 SRC = "+14155551234"  # your Plivo number
 DST = "+14155559876"  # recipient

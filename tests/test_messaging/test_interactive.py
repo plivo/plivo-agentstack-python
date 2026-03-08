@@ -1,8 +1,8 @@
-"""Tests for plivo_agent.messaging.interactive — InteractiveMessage and Location."""
+"""Tests for plivo_agentstack.messaging.interactive — InteractiveMessage and Location."""
 
 from __future__ import annotations
 
-from plivo_agent.messaging.interactive import InteractiveMessage, Location
+from plivo_agentstack.messaging.interactive import InteractiveMessage, Location
 
 
 def test_button_message():

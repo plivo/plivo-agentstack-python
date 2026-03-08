@@ -8,7 +8,7 @@ from typing import Any
 
 import httpx
 
-from plivo_agent.errors import (
+from plivo_agentstack.errors import (
     AuthenticationError,
     ForbiddenError,
     NotFoundError,
@@ -18,7 +18,7 @@ from plivo_agent.errors import (
     ValidationError,
 )
 
-logger = logging.getLogger("plivo_agent.http")
+logger = logging.getLogger("plivo_agentstack.http")
 
 _STATUS_MAP: dict[int, type[PlivoError]] = {
     400: ValidationError,
@@ -58,7 +58,7 @@ class HttpTransport:
             base_url=self._base_url,
             timeout=httpx.Timeout(timeout),
             headers={
-                "User-Agent": "plivo-agent-python/0.1.0",
+                "User-Agent": "plivo-agentstack-python/0.1.0",
                 "Content-Type": "application/json",
             },
         )

@@ -1,7 +1,7 @@
 """Search for available phone numbers and buy one.
 
 Prerequisites:
-    pip install plivo_agent
+    pip install plivo_agentstack
 
 Environment variables:
     PLIVO_AUTH_ID      -- Your Plivo auth ID
@@ -13,7 +13,7 @@ Run:
 
 import asyncio
 
-from plivo_agent import AsyncClient
+from plivo_agentstack import AsyncClient
 
 
 async def main():

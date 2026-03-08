@@ -1,8 +1,8 @@
-"""Tests for plivo_agent.errors exception hierarchy."""
+"""Tests for plivo_agentstack.errors exception hierarchy."""
 
 from __future__ import annotations
 
-from plivo_agent.errors import (
+from plivo_agentstack.errors import (
     AuthenticationError,
     ForbiddenError,
     NotFoundError,

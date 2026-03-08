@@ -3,7 +3,7 @@ requires = ["hatchling"]
 build-backend = "hatchling.build"
 
 [project]
-name = "plivo_agent"
+name = "plivo_agentstack"
 version = "0.1.0"
 description = "Plivo Python SDK — async-first, with Voice AI Agent support"
 readme = "README.md"

@@ -4,7 +4,7 @@ from __future__ import annotations
 
 from typing import Any
 
-from plivo_agent._http import HttpTransport
+from plivo_agentstack._http import HttpTransport
 
 
 class NumbersClient:

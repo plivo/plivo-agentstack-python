@@ -45,7 +45,7 @@ jobs:
         run: pip install -e ".[dev]" pytest-cov
 
       - name: Run tests with coverage
-        run: pytest tests/ --cov=plivo_agent --cov-report=xml
+        run: pytest tests/ --cov=plivo_agentstack --cov-report=xml
 
       - name: Upload coverage to Codecov
         uses: codecov/codecov-action@v4

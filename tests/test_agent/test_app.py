@@ -1,8 +1,8 @@
-"""Tests for plivo_agent.agent.app.VoiceApp."""
+"""Tests for plivo_agentstack.agent.app.VoiceApp."""
 
 from __future__ import annotations
 
-from plivo_agent.agent.app import VoiceApp
+from plivo_agentstack.agent.app import VoiceApp
 
 
 def test_on_decorator_registers_handler():
