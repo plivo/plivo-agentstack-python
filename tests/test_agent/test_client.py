@@ -14,8 +14,13 @@ async def test_create_agent(mock_api, http_transport):
     """POST /v1/Account/TESTAUTH123/Agent creates an agent."""
     mock_api.post("/v1/Account/TESTAUTH123/Agent").mock(
         return_value=httpx.Response(
-            200,
-            json={"agent_uuid": AGENT_UUID, "agent_name": "My Agent"},
+            201,
+            json={
+                "api_id": "abc-123",
+                "message": "agent created",
+                "agent_uuid": AGENT_UUID,
+                "agent_name": "My Agent",
+            },
         )
     )
     client = AgentClient(http_transport)
@@ -29,7 +34,7 @@ async def test_get_agent(mock_api, http_transport):
     mock_api.get(f"/v1/Account/TESTAUTH123/Agent/{AGENT_UUID}").mock(
         return_value=httpx.Response(
             200,
-            json={"agent_uuid": AGENT_UUID, "agent_name": "My Agent"},
+            json={"api_id": "abc-123", "agent_uuid": AGENT_UUID, "agent_name": "My Agent"},
         )
     )
     client = AgentClient(http_transport)
@@ -42,13 +47,23 @@ async def test_list_agents(mock_api, http_transport):
     mock_api.get("/v1/Account/TESTAUTH123/Agent").mock(
         return_value=httpx.Response(
             200,
-            json={"data": [{"agent_uuid": AGENT_UUID}], "meta": {"total": 1}},
+            json={
+                "api_id": "abc-123",
+                "objects": [{"agent_uuid": AGENT_UUID}],
+                "meta": {
+                    "limit": 10,
+                    "offset": 0,
+                    "total_count": 1,
+                    "previous": None,
+                    "next": None,
+                },
+            },
         )
     )
     client = AgentClient(http_transport)
-    result = await client.agents.list(page=1, per_page=10)
-    assert result["meta"]["total"] == 1
-    assert len(result["data"]) == 1
+    result = await client.agents.list(limit=10, offset=0)
+    assert result["meta"]["total_count"] == 1
+    assert len(result["objects"]) == 1
 
 
 async def test_update_agent(mock_api, http_transport):
@@ -56,7 +71,7 @@ async def test_update_agent(mock_api, http_transport):
     mock_api.patch(f"/v1/Account/TESTAUTH123/Agent/{AGENT_UUID}").mock(
         return_value=httpx.Response(
             200,
-            json={"agent_uuid": AGENT_UUID, "agent_name": "Updated Agent"},
+            json={"api_id": "abc-123", "agent_uuid": AGENT_UUID, "agent_name": "Updated Agent"},
         )
     )
     client = AgentClient(http_transport)
@@ -78,8 +93,13 @@ async def test_call_initiate(mock_api, http_transport):
     """POST /v1/Account/TESTAUTH123/AgentCall initiates an outbound call."""
     mock_api.post("/v1/Account/TESTAUTH123/AgentCall").mock(
         return_value=httpx.Response(
-            200,
-            json={"call_uuid": CALL_UUID, "status": "initiated"},
+            201,
+            json={
+                "api_id": "abc-123",
+                "message": "call initiated",
+                "call_uuid": CALL_UUID,
+                "status": "initiated",
+            },
         )
     )
     client = AgentClient(http_transport)
@@ -96,26 +116,37 @@ async def test_call_connect(mock_api, http_transport):
     """POST /v1/Account/TESTAUTH123/AgentCall/{uuid}/connect connects a call to an agent."""
     mock_api.post(f"/v1/Account/TESTAUTH123/AgentCall/{CALL_UUID}/connect").mock(
         return_value=httpx.Response(
-            200,
-            json={"status": "connected"},
+            201,
+            json={
+                "api_id": "abc-123",
+                "message": "call connected",
+                "agent_session_id": "sess-001",
+                "status": "connecting",
+            },
         )
     )
     client = AgentClient(http_transport)
     result = await client.calls.connect(CALL_UUID, AGENT_UUID)
-    assert result["status"] == "connected"
+    assert result["status"] == "connecting"
+    assert result["agent_session_id"] == "sess-001"
 
 
 async def test_number_assign(mock_api, http_transport):
     """POST /v1/Account/TESTAUTH123/Agent/{uuid}/Number assigns a number to an agent."""
     mock_api.post(f"/v1/Account/TESTAUTH123/Agent/{AGENT_UUID}/Number").mock(
         return_value=httpx.Response(
-            200,
-            json={"status": "assigned", "number": "+14155551234"},
+            201,
+            json={
+                "api_id": "abc-123",
+                "message": "number assigned",
+                "agent_uuid": AGENT_UUID,
+                "number": "+14155551234",
+            },
         )
     )
     client = AgentClient(http_transport)
     result = await client.numbers.assign(AGENT_UUID, "+14155551234")
-    assert result["status"] == "assigned"
+    assert result["message"] == "number assigned"
     assert result["number"] == "+14155551234"
 
 
@@ -139,17 +170,24 @@ async def test_session_list(mock_api, http_transport):
         return_value=httpx.Response(
             200,
             json={
-                "data": [
+                "api_id": "abc-123",
+                "objects": [
                     {"agent_session_id": SESSION_ID, "duration_seconds": 120}
                 ],
-                "meta": {"total": 1},
+                "meta": {
+                    "limit": 10,
+                    "offset": 0,
+                    "total_count": 1,
+                    "previous": None,
+                    "next": None,
+                },
             },
         )
     )
     client = AgentClient(http_transport)
-    result = await client.sessions.list(AGENT_UUID, page=1, per_page=10)
-    assert result["meta"]["total"] == 1
-    assert result["data"][0]["agent_session_id"] == SESSION_ID
+    result = await client.sessions.list(AGENT_UUID, limit=10, offset=0)
+    assert result["meta"]["total_count"] == 1
+    assert result["objects"][0]["agent_session_id"] == SESSION_ID
 
 
 async def test_session_get(mock_api, http_transport):
@@ -158,6 +196,7 @@ async def test_session_get(mock_api, http_transport):
         return_value=httpx.Response(
             200,
             json={
+                "api_id": "abc-123",
                 "agent_session_id": SESSION_ID,
                 "agent_uuid": AGENT_UUID,
                 "duration_seconds": 120,

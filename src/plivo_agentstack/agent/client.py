@@ -37,10 +37,11 @@ class AgentResource:
     async def list(self, **params: Any) -> dict:
         """GET /Agent -- paginated list.
 
-        Optional query params: page, per_page, sort_by, sort_order,
+        Optional query params: limit, offset, sort_by, sort_order,
         agent_mode, participant_mode.
 
-        Returns ``{"data": [...], "meta": {"page", "per_page", "total", "total_pages"}}``.
+        Returns ``{"api_id": "...", "objects": [...],
+        "meta": {"limit", "offset", "total_count", "previous", "next"}}``.
         """
         return await self._http.request("GET", f"{self._prefix}/Agent", params=params)
 
@@ -157,7 +158,7 @@ class SessionResource:
     async def list(self, agent_uuid: str, **params: Any) -> dict:
         """GET /Agent/{agent_uuid}/Session -- list sessions.
 
-        Optional query params: page, per_page, sort_by, sort_order, agent_mode.
+        Optional query params: limit, offset, sort_by, sort_order, agent_mode.
         """
         return await self._http.request(
             "GET", f"{self._prefix}/Agent/{agent_uuid}/Session", params=params
