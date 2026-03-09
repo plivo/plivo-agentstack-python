@@ -143,9 +143,17 @@ def on_started(session, event: AgentSessionStarted):
 
 @app.on("tool_call")
 async def on_tool_call(session, event: ToolCall):
+    """Handle tool calls from the LLM.
+
+    Uses client.agent.calls.dial() to add participants mid-call.
+    Unlike transfer_to_number() (which hands off the call and the agent leaves),
+    dial() keeps the AI agent on the conference while new participants join.
+    """
     print(f"  Tool call: {event.name}({event.arguments})")
 
     if event.name == "add_participant":
+        # Dial a new participant into the conference mid-call.
+        # The target is called and auto-joins the same MPC.
         number = event.arguments.get("number", "")
         await client.agent.calls.dial(
             session.call_uuid,
@@ -155,12 +163,17 @@ async def on_tool_call(session, event: ToolCall):
         print(f"  Dialing {number} into conference")
 
     elif event.name == "transfer_to_human":
+        # Warm transfer pattern:
+        # 1. Add the human agent to the conference via dial()
+        # 2. Brief the human agent (they hear the conversation)
+        # 3. AI agent drops out, leaving human + caller (see on_participant_added)
         session.speak("Let me connect you with a human agent. One moment.")
         await client.agent.calls.dial(
             session.call_uuid,
             targets=[{"number": "+18005551234"}],
         )
         session.send_tool_result(event.id, {"status": "transferring"})
+        print("  Warm transfer: dialing human agent into conference")
 
     else:
         session.send_tool_error(event.id, f"Unknown tool: {event.name}")

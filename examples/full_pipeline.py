@@ -181,7 +181,9 @@ async def init_agent():
             "min_speech_duration_ms": 100,
             "max_turn_duration_ms": 30000,
             "turn_enabled": True,
-            "turn_threshold": 0.5,
+            "audio_turn_threshold": 0.75,       # SmartTurn: above this, confirm (0.75)
+            "text_turn_threshold": 0.75,         # TurnFormer: text-based (0.75)
+            "fallback_turn_gate_threshold": 0.4, # below this, reject turn (0.4)
             "early_trigger_min_silence_ms": 200,
             "min_interruption_duration_ms": 200,
             "resume_false_interruption": True,

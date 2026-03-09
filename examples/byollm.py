@@ -74,7 +74,7 @@ async def init_agent():
             "min_speech_duration_ms": 100,
             "max_turn_duration_ms": 1000,
             "turn_enabled": True,
-            "turn_threshold": 0.5,
+            "audio_turn_threshold": 0.75,
         },
         welcome_greeting="Welcome to Mario's Pizza! What can I get for you today?",
         websocket_url="ws://localhost:9000/ws",
