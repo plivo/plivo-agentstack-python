@@ -33,12 +33,12 @@ fastapi_app = FastAPI(title="Voice Agent")
 voice = VoiceApp()
 
 
-@voice.on("agent_session.started")
+@voice.on("session.started")
 async def on_session_started(session, event: AgentSessionStarted):
     logger.info("Session started: %s", event.agent_session_id)
 
 
-@voice.on("tool_call")
+@voice.on("tool.called")
 async def on_tool_call(session, event: ToolCall):
     """Handle tool calls -- async handlers work natively with FastAPI."""
     logger.info("Tool call: %s(%s)", event.name, event.arguments)
@@ -55,7 +55,7 @@ async def on_tool_call(session, event: ToolCall):
         session.send_tool_error(event.id, f"Unknown tool: {event.name}")
 
 
-@voice.on("agent_session.ended")
+@voice.on("session.ended")
 async def on_session_ended(session, event: AgentSessionEnded):
     logger.info(
         "Session ended: duration=%ds turns=%s",

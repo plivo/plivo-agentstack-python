@@ -2,9 +2,16 @@
 
 from __future__ import annotations
 
-import httpx
+import json
 
-from plivo_agentstack.agent.client import AgentClient
+import httpx
+import pytest
+
+from plivo_agentstack.agent.client import (
+    EAGERNESS_PRESETS,
+    AgentClient,
+    _expand_semantic_vad,
+)
 
 AGENT_UUID = "550e8400-e29b-41d4-a716-446655440000"
 CALL_UUID = "call-uuid-001"
@@ -209,3 +216,93 @@ async def test_session_get(mock_api, http_transport):
     assert result["agent_session_id"] == SESSION_ID
     assert result["duration_seconds"] == 120
     assert result["turn_count"] == 5
+
+
+# ---------------------------------------------------------------------------
+# semantic_vad expansion tests
+# ---------------------------------------------------------------------------
+
+
+def test_expand_semantic_vad_string_preset():
+    """String presets expand to the full eagerness config dict."""
+    result = _expand_semantic_vad("high")
+    assert result == EAGERNESS_PRESETS["high"]
+    assert result["completed_turn_delay_ms"] == 150
+
+
+def test_expand_semantic_vad_auto():
+    """'auto' preset expands to an empty dict (server defaults)."""
+    result = _expand_semantic_vad("auto")
+    assert result == {}
+
+
+def test_expand_semantic_vad_unknown_string():
+    """Unknown string preset raises ValueError."""
+    with pytest.raises(ValueError, match="Unknown semantic_vad preset"):
+        _expand_semantic_vad("turbo")
+
+
+def test_expand_semantic_vad_dict_with_eagerness():
+    """Dict with 'eagerness' key merges preset with explicit overrides."""
+    result = _expand_semantic_vad({"eagerness": "low", "completed_turn_delay_ms": 800})
+    # Base from "low" preset, overridden completed_turn_delay_ms
+    assert result["completed_turn_delay_ms"] == 800
+    expected = EAGERNESS_PRESETS["low"]["incomplete_turn_delay_ms"]
+    assert result["incomplete_turn_delay_ms"] == expected
+
+
+def test_expand_semantic_vad_raw_dict():
+    """Dict without 'eagerness' passes through as-is."""
+    raw = {"completed_turn_delay_ms": 999, "custom_field": True}
+    result = _expand_semantic_vad(raw)
+    assert result["completed_turn_delay_ms"] == 999
+    assert result["custom_field"] is True
+
+
+def test_expand_semantic_vad_none():
+    """None returns None (no semantic_vad config)."""
+    assert _expand_semantic_vad(None) is None
+
+
+def test_expand_semantic_vad_invalid_type():
+    """Non-str/dict/None raises TypeError."""
+    with pytest.raises(TypeError, match="semantic_vad must be str, dict, or None"):
+        _expand_semantic_vad(42)
+
+
+async def test_create_agent_with_semantic_vad_preset(mock_api, http_transport):
+    """create() expands semantic_vad string preset before sending the request."""
+    mock_api.post("/v1/Account/TESTAUTH123/Agent").mock(
+        return_value=httpx.Response(
+            201,
+            json={
+                "api_id": "abc-123",
+                "message": "agent created",
+                "agent_uuid": AGENT_UUID,
+            },
+        )
+    )
+    client = AgentClient(http_transport)
+    await client.agents.create(
+        agent_name="VAD Agent",
+        websocket_url="wss://example.com/ws",
+        semantic_vad="medium",
+    )
+    request = mock_api.calls[0].request
+    body = json.loads(request.content)
+    assert body["semantic_vad"] == EAGERNESS_PRESETS["medium"]
+
+
+async def test_update_agent_with_semantic_vad_preset(mock_api, http_transport):
+    """update() expands semantic_vad string preset before sending the request."""
+    mock_api.patch(f"/v1/Account/TESTAUTH123/Agent/{AGENT_UUID}").mock(
+        return_value=httpx.Response(
+            200,
+            json={"api_id": "abc-123", "agent_uuid": AGENT_UUID},
+        )
+    )
+    client = AgentClient(http_transport)
+    await client.agents.update(AGENT_UUID, semantic_vad="high")
+    request = mock_api.calls[0].request
+    body = json.loads(request.content)
+    assert body["semantic_vad"] == EAGERNESS_PRESETS["high"]

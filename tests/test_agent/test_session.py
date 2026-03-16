@@ -27,19 +27,19 @@ async def _drain(session: Session) -> dict:
 
 
 async def test_send_tool_result_enqueues():
-    """send_tool_result enqueues a tool_result message."""
+    """send_tool_result enqueues a tool.result message."""
     session = _make_session()
     session.send_tool_result("tc-1", {"answer": 42})
     msg = await _drain(session)
-    assert msg == {"type": "tool_result", "id": "tc-1", "result": {"answer": 42}}
+    assert msg == {"type": "tool.result", "id": "tc-1", "result": {"answer": 42}}
 
 
 async def test_send_tool_error_enqueues():
-    """send_tool_error enqueues a tool_error message."""
+    """send_tool_error enqueues a tool.error message."""
     session = _make_session()
     session.send_tool_error("tc-2", "something broke")
     msg = await _drain(session)
-    assert msg == {"type": "tool_error", "id": "tc-2", "error": "something broke"}
+    assert msg == {"type": "tool.error", "id": "tc-2", "error": "something broke"}
 
 
 async def test_send_text_enqueues():
@@ -58,10 +58,10 @@ async def test_hangup_enqueues():
     assert msg == {"type": "agent_session.hangup"}
 
 
-async def test_transfer_to_number_string():
-    """transfer_to_number with a single string wraps it into a list."""
+async def test_transfer_string():
+    """transfer with a single string wraps it into a list."""
     session = _make_session()
-    session.transfer_to_number("+14155551234")
+    session.transfer("+14155551234")
     msg = await _drain(session)
     assert msg["type"] == "agent_session.transfer"
     assert msg["destination"] == ["+14155551234"]
@@ -69,40 +69,66 @@ async def test_transfer_to_number_string():
     assert msg["timeout"] == 30
 
 
-async def test_transfer_to_number_list():
-    """transfer_to_number with a list passes destinations through."""
+async def test_transfer_list():
+    """transfer with a list passes destinations through."""
     session = _make_session()
-    session.transfer_to_number(["+14155551234", "+18005559876"], dial_mode="sequential")
+    session.transfer(["+14155551234", "+18005559876"], dial_mode="sequential")
     msg = await _drain(session)
     assert msg["destination"] == ["+14155551234", "+18005559876"]
     assert msg["dial_mode"] == "sequential"
 
 
-async def test_transfer_to_sip():
-    """transfer_to_sip sends SIP URI with sip flag."""
+async def test_transfer_with_timeout():
+    """transfer passes custom timeout."""
     session = _make_session()
-    session.transfer_to_sip("sip:agent@phone.plivo.com")
+    session.transfer("+14155551234", timeout=15)
     msg = await _drain(session)
     assert msg["type"] == "agent_session.transfer"
-    assert msg["destination"] == ["sip:agent@phone.plivo.com"]
-    assert msg["sip"] is True
-    assert msg["timeout"] == 30
-    assert "sip_headers" not in msg
-
-
-async def test_transfer_to_sip_with_headers():
-    """transfer_to_sip includes custom SIP headers when provided."""
-    session = _make_session()
-    session.transfer_to_sip(
-        "sip:agent@pbx.example.com",
-        sip_headers={"X-Agent-Id": "a42", "X-Context": "escalation"},
-        timeout=15,
-    )
-    msg = await _drain(session)
-    assert msg["destination"] == ["sip:agent@pbx.example.com"]
-    assert msg["sip"] is True
-    assert msg["sip_headers"] == {"X-Agent-Id": "a42", "X-Context": "escalation"}
+    assert msg["destination"] == ["+14155551234"]
     assert msg["timeout"] == 15
+
+
+async def test_send_dtmf_enqueues():
+    """send_dtmf enqueues an agent_session.send_dtmf message."""
+    session = _make_session()
+    session.send_dtmf("123#")
+    msg = await _drain(session)
+    assert msg == {"type": "agent_session.send_dtmf", "digits": "123#"}
+
+
+async def test_handoff_enqueues_update_and_inject():
+    """handoff sends an update message with system_prompt, tools, llm, then injects summary."""
+    session = _make_session()
+    session.handoff(
+        system_prompt="You are a billing specialist.",
+        tools=[{"name": "check_balance"}],
+        llm={"model": "gpt-4o"},
+        summary="Customer wants to check their balance.",
+    )
+    # First message: agent_session.update with system_prompt, tools, llm
+    update_msg = await _drain(session)
+    assert update_msg["type"] == "agent_session.update"
+    assert update_msg["system_prompt"] == "You are a billing specialist."
+    assert update_msg["tools"] == [{"name": "check_balance"}]
+    assert update_msg["llm"] == {"model": "gpt-4o"}
+
+    # Second message: agent_session.inject with summary
+    inject_msg = await _drain(session)
+    assert inject_msg["type"] == "agent_session.inject"
+    assert inject_msg["content"] == "Customer wants to check their balance."
+
+
+async def test_handoff_without_optional_params():
+    """handoff with only system_prompt sends a single update message."""
+    session = _make_session()
+    session.handoff(system_prompt="You are a new agent.")
+    update_msg = await _drain(session)
+    assert update_msg["type"] == "agent_session.update"
+    assert update_msg["system_prompt"] == "You are a new agent."
+    assert "tools" not in update_msg
+    assert "llm" not in update_msg
+    # No inject message when summary is None
+    assert session._queue.empty()
 
 
 async def test_play_background_enqueues():

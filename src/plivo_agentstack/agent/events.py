@@ -23,7 +23,7 @@ from typing import Any
 class AgentSessionStarted:
     """Session started -- first event on every connection."""
 
-    type: str = "agent_session.started"
+    type: str = "session.started"
     agent_session_id: str = ""
     call_id: str = ""
     caller: str | None = None
@@ -40,7 +40,7 @@ class AgentSessionStarted:
 class ToolCall:
     """LLM invoked a customer-defined tool."""
 
-    type: str = "tool_call"
+    type: str = "tool.called"
     id: str = ""
     name: str = ""
     arguments: dict = field(default_factory=dict)
@@ -63,7 +63,7 @@ class Prompt:
     Sent progressively with is_final=False, finalized with is_final=True.
     """
 
-    type: str = "prompt"
+    type: str = "user.transcription"
     text: str = ""
     is_final: bool = False
 
@@ -72,8 +72,16 @@ class Prompt:
 class Dtmf:
     """DTMF digit detected (caller pressed a key)."""
 
-    type: str = "dtmf"
+    type: str = "user.dtmf"
     digit: str = ""
+
+
+@dataclass
+class DtmfSent:
+    """DTMF digits were sent on the call (confirmation)."""
+
+    type: str = "dtmf.sent"
+    digits: str = ""
 
 
 @dataclass
@@ -96,7 +104,7 @@ class Interruption:
     None in text/BYOLLM mode.
     """
 
-    type: str = "interruption"
+    type: str = "agent.speech_interrupted"
     interrupted_text: str | None = None
     turn_id: str | None = None
 
@@ -105,7 +113,7 @@ class Interruption:
 class AgentSessionEnded:
     """Session ended -- includes performance metrics."""
 
-    type: str = "agent_session.ended"
+    type: str = "session.ended"
     duration_seconds: int = 0
     turn_count: int | None = None
     transcript: Any = None
@@ -118,7 +126,7 @@ class AgentSessionEnded:
 class Error:
     """An error occurred in the pipeline."""
 
-    type: str = "error"
+    type: str = "session.error"
     code: str = ""
     message: str = ""
 
@@ -127,7 +135,7 @@ class Error:
 class VadSpeechStarted:
     """VAD detected speech onset (opt-in: events.vad_events=true)."""
 
-    type: str = "vad.speech_started"
+    type: str = "user.speech_started"
     timestamp_ms: int = 0
 
 
@@ -135,7 +143,7 @@ class VadSpeechStarted:
 class VadSpeechStopped:
     """VAD detected speech offset (opt-in: events.vad_events=true)."""
 
-    type: str = "vad.speech_stopped"
+    type: str = "user.speech_stopped"
     timestamp_ms: int = 0
     duration_ms: int = 0
 
@@ -144,10 +152,10 @@ class VadSpeechStopped:
 class TurnDetected:
     """Semantic turn end detected (opt-in: events.turn_events=true).
 
-    trigger is one of: "silence", "max_duration", "smart_turn".
+    trigger is one of: "silence", "max_duration", "text".
     """
 
-    type: str = "turn.detected"
+    type: str = "user.turn_completed"
     turn_id: str = ""
     trigger: str = ""
     duration_ms: int = 0
@@ -208,6 +216,48 @@ class PlayCompleted:
     """Audio playback from agent_session.play completed."""
 
     type: str = "play.completed"
+
+
+# ---------------------------------------------------------------------------
+# Agent tool events -- server-side sub-agent lifecycle
+# ---------------------------------------------------------------------------
+
+
+@dataclass
+class AgentToolStarted:
+    """Agent tool sub-agent started -- parent agent suspended.
+
+    The server is running a multi-turn sub-agent (e.g., collecting email).
+    Normal turn events continue to flow, annotated with agent_tool_id.
+    """
+
+    type: str = "agent_tool.started"
+    agent_tool_type: str = ""
+    agent_tool_id: str = ""
+
+
+@dataclass
+class AgentToolCompleted:
+    """Agent tool sub-agent completed -- parent agent resumed.
+
+    result contains the collected data (varies by agent_tool_type).
+    May include timed_out=True if the sub-agent exceeded its timeout.
+    """
+
+    type: str = "agent_tool.completed"
+    agent_tool_type: str = ""
+    agent_tool_id: str = ""
+    result: dict = field(default_factory=dict)
+
+
+@dataclass
+class AgentToolFailed:
+    """Agent tool sub-agent failed -- parent agent resumed with error."""
+
+    type: str = "agent_tool.failed"
+    agent_tool_type: str = ""
+    agent_tool_id: str = ""
+    error: str = ""
 
 
 @dataclass
@@ -275,6 +325,84 @@ class TurnMetrics:
 
 
 # ---------------------------------------------------------------------------
+# State change & lifecycle events
+# ---------------------------------------------------------------------------
+
+
+@dataclass
+class UserStateChanged:
+    """User state transition (e.g. speaking -> listening -> away)."""
+
+    type: str = "user.state_changed"
+    old_state: str | None = None
+    new_state: str | None = None
+    timestamp: str | None = None
+
+
+@dataclass
+class AgentStateChanged:
+    """Agent state transition (e.g. idle -> listening -> thinking -> speaking)."""
+
+    type: str = "agent.state_changed"
+    old_state: str | None = None
+    new_state: str | None = None
+    timestamp: str | None = None
+
+
+@dataclass
+class AgentSpeechStarted:
+    """Agent started speaking -- TTS audio is playing."""
+
+    type: str = "agent.speech_started"
+    timestamp: str | None = None
+
+
+@dataclass
+class AgentSpeechCompleted:
+    """Agent finished speaking -- TTS playback done."""
+
+    type: str = "agent.speech_completed"
+    playback_position_s: float | None = None
+    timestamp: str | None = None
+
+
+@dataclass
+class AgentSpeechCreated:
+    """LLM started generating a response -- speech turn created."""
+
+    type: str = "agent.speech_created"
+    source: str | None = None
+    user_initiated: bool | None = None
+    timestamp: str | None = None
+
+
+@dataclass
+class AgentFalseInterruption:
+    """False interruption detected -- agent speech resumed."""
+
+    type: str = "agent.false_interruption"
+    timestamp: str | None = None
+
+
+@dataclass
+class ToolExecuted:
+    """Server-side tool execution completed (e.g. MCP tools)."""
+
+    type: str = "tool.executed"
+    tool_name: str | None = None
+    timestamp: str | None = None
+
+
+@dataclass
+class LlmAvailabilityChanged:
+    """LLM became available or unavailable."""
+
+    type: str = "llm.availability_changed"
+    available: bool | None = None
+    timestamp: str | None = None
+
+
+# ---------------------------------------------------------------------------
 # Typed event models -- audio stream (Plivo Audio Streaming protocol)
 # ---------------------------------------------------------------------------
 
@@ -336,26 +464,39 @@ class StreamStop:
 # ---------------------------------------------------------------------------
 
 _EVENT_REGISTRY: dict[str, type] = {
-    "agent_session.started": AgentSessionStarted,
-    "tool_call": ToolCall,
+    "session.started": AgentSessionStarted,
+    "tool.called": ToolCall,
     "turn.completed": TurnCompleted,
-    "prompt": Prompt,
-    "dtmf": Dtmf,
-    "interruption": Interruption,
-    "agent_session.ended": AgentSessionEnded,
-    "error": Error,
-    "vad.speech_started": VadSpeechStarted,
-    "vad.speech_stopped": VadSpeechStopped,
-    "turn.detected": TurnDetected,
+    "user.transcription": Prompt,
+    "user.dtmf": Dtmf,
+    "dtmf": StreamDtmf,
+    "dtmf.sent": DtmfSent,
+    "agent.handoff": AgentHandoff,
+    "agent.speech_interrupted": Interruption,
+    "session.ended": AgentSessionEnded,
+    "session.error": Error,
+    "user.speech_started": VadSpeechStarted,
+    "user.speech_stopped": VadSpeechStopped,
+    "user.turn_completed": TurnDetected,
+    "user.state_changed": UserStateChanged,
+    "agent.state_changed": AgentStateChanged,
+    "agent.speech_started": AgentSpeechStarted,
+    "agent.speech_completed": AgentSpeechCompleted,
+    "agent.speech_created": AgentSpeechCreated,
+    "agent.false_interruption": AgentFalseInterruption,
+    "tool.executed": ToolExecuted,
+    "llm.availability_changed": LlmAvailabilityChanged,
     "voicemail.detected": VoicemailDetected,
     "voicemail.beep": VoicemailBeep,
     "participant.added": ParticipantAdded,
     "participant.removed": ParticipantRemoved,
     "call.transferred": CallTransferred,
     "play.completed": PlayCompleted,
+    "agent_tool.started": AgentToolStarted,
+    "agent_tool.completed": AgentToolCompleted,
+    "agent_tool.failed": AgentToolFailed,
     "user.idle": UserIdle,
     "turn.metrics": TurnMetrics,
-    "agent.handoff": AgentHandoff,
     "start": StreamStart,
     "media": StreamMedia,
     "playedStream": PlayedStream,

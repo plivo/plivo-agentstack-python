@@ -6,11 +6,11 @@ Register event handlers with decorators, then either:
 
 Every handler can be sync or async -- the framework auto-detects:
 
-    @app.on("tool_call")
+    @app.on("tool.called")
     def on_tool_call(session, event: ToolCall):       # sync -- runs in thread pool
         session.send_tool_result(event.id, ...)
 
-    @app.on("tool_call")
+    @app.on("tool.called")
     async def on_tool_call(session, event: ToolCall):  # async -- runs in event loop
         result = await db.lookup(event.arguments["id"])
         session.send_tool_result(event.id, result)
@@ -44,7 +44,7 @@ class VoiceApp:
     - Use app.handle_fastapi(ws) or app.handle_starlette(ws) in framework routes
 
     Handlers receive typed event objects instead of raw dicts.
-    The event type matches the decorator name (e.g. @app.on("tool_call") -> ToolCall).
+    The event type matches the decorator name (e.g. @app.on("tool.called") -> ToolCall).
     """
 
     def __init__(self) -> None:
@@ -193,7 +193,7 @@ class VoiceApp:
                 # Resolve event type from "type" or "event" field
                 event_type = data.get("type") or data.get("event")
 
-                if event_type == "agent_session.started":
+                if event_type == "session.started":
                     session.agent_session_id = data.get("agent_session_id")
                     session.call_uuid = data.get("call_id")
 
@@ -214,7 +214,7 @@ class VoiceApp:
                 if handler:
                     await self._dispatch(handler, session, event, loop)
 
-                if event_type in ("agent_session.ended", "stop"):
+                if event_type in ("session.ended", "stop"):
                     break
         except websockets.exceptions.ConnectionClosed:
             pass  # normal -- server closed after hangup or call ended

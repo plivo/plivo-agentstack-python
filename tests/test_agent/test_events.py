@@ -5,7 +5,10 @@ from __future__ import annotations
 from plivo_agentstack.agent.events import (
     _EVENT_REGISTRY,
     AgentSessionStarted,
-    Dtmf,
+    AgentSpeechCreated,
+    AgentToolCompleted,
+    DtmfSent,
+    StreamDtmf,
     StreamMedia,
     StreamStart,
     ToolCall,
@@ -16,9 +19,9 @@ from plivo_agentstack.agent.events import (
 
 
 def test_parse_agent_session_started():
-    """agent_session.started is parsed into AgentSessionStarted."""
+    """session.started is parsed into AgentSessionStarted."""
     data = {
-        "type": "agent_session.started",
+        "type": "session.started",
         "agent_session_id": "sess-001",
         "call_id": "call-001",
         "caller": "+14155551234",
@@ -45,9 +48,9 @@ def test_parse_agent_session_started():
 
 
 def test_parse_tool_call():
-    """tool_call is parsed into ToolCall with arguments dict."""
+    """tool.called is parsed into ToolCall with arguments dict."""
     data = {
-        "type": "tool_call",
+        "type": "tool.called",
         "id": "tc-42",
         "name": "lookup_order",
         "arguments": {"order_id": "ORD-123"},
@@ -152,9 +155,8 @@ def test_parse_nested_stream_media():
 def test_parse_nested_stream_dtmf():
     """Nested 'dtmf' event (audio stream mode) extracts digit from sub-dict.
 
-    The registry maps "dtmf" to the managed-mode Dtmf class. When the data
-    also contains a nested "dtmf" dict (audio stream protocol), the parser
-    extracts the digit from that nested dict into the Dtmf dataclass.
+    The registry maps "dtmf" to StreamDtmf (audio stream protocol).
+    Managed-mode DTMF uses "user.dtmf" and maps to the Dtmf class.
     """
     data = {
         "event": "dtmf",
@@ -163,8 +165,8 @@ def test_parse_nested_stream_dtmf():
         },
     }
     event = parse_event(data)
-    # Registry maps "dtmf" -> Dtmf (managed-mode), not StreamDtmf
-    assert isinstance(event, Dtmf)
+    # Registry maps "dtmf" -> StreamDtmf (audio stream protocol)
+    assert isinstance(event, StreamDtmf)
     assert event.digit == "5"
 
 
@@ -179,7 +181,7 @@ def test_unknown_event_returns_raw_dict():
 def test_extra_fields_ignored():
     """Extra fields not in the dataclass are silently dropped."""
     data = {
-        "type": "tool_call",
+        "type": "tool.called",
         "id": "tc-99",
         "name": "my_tool",
         "arguments": {},
@@ -192,27 +194,80 @@ def test_extra_fields_ignored():
     assert not hasattr(event, "extra_field")
 
 
+def test_parse_dtmf_sent():
+    """dtmf.sent is parsed into DtmfSent with digits."""
+    data = {
+        "type": "dtmf.sent",
+        "digits": "123#",
+    }
+    event = parse_event(data)
+    assert isinstance(event, DtmfSent)
+    assert event.digits == "123#"
+
+
+def test_parse_agent_tool_completed():
+    """agent_tool.completed is parsed into AgentToolCompleted with result dict."""
+    data = {
+        "type": "agent_tool.completed",
+        "agent_tool_type": "collect_email",
+        "agent_tool_id": "tool-99",
+        "result": {"email": "user@example.com"},
+    }
+    event = parse_event(data)
+    assert isinstance(event, AgentToolCompleted)
+    assert event.agent_tool_type == "collect_email"
+    assert event.agent_tool_id == "tool-99"
+    assert event.result == {"email": "user@example.com"}
+
+
+def test_parse_agent_speech_created():
+    """agent.speech_created is parsed into AgentSpeechCreated."""
+    data = {
+        "type": "agent.speech_created",
+        "source": "llm",
+        "user_initiated": True,
+        "timestamp": "2025-06-01T12:00:00Z",
+    }
+    event = parse_event(data)
+    assert isinstance(event, AgentSpeechCreated)
+    assert event.source == "llm"
+    assert event.user_initiated is True
+    assert event.timestamp == "2025-06-01T12:00:00Z"
+
+
 def test_all_event_types_in_registry():
-    """Registry contains all expected event types (managed + audio stream)."""
+    """Registry contains all expected event types (managed + audio stream + new)."""
     # Managed-mode events
     managed_types = {
-        "agent_session.started",
-        "tool_call",
+        "session.started",
+        "tool.called",
         "turn.completed",
-        "prompt",
-        "dtmf",
-        "interruption",
-        "agent_session.ended",
-        "error",
-        "vad.speech_started",
-        "vad.speech_stopped",
-        "turn.detected",
+        "user.transcription",
+        "user.dtmf",
+        "dtmf.sent",
+        "agent.speech_interrupted",
+        "session.ended",
+        "session.error",
+        "user.speech_started",
+        "user.speech_stopped",
+        "user.turn_completed",
+        "user.state_changed",
+        "agent.state_changed",
+        "agent.speech_started",
+        "agent.speech_completed",
+        "agent.speech_created",
+        "agent.false_interruption",
+        "tool.executed",
+        "llm.availability_changed",
         "voicemail.detected",
         "voicemail.beep",
         "participant.added",
         "participant.removed",
         "call.transferred",
         "play.completed",
+        "agent_tool.started",
+        "agent_tool.completed",
+        "agent_tool.failed",
         "user.idle",
         "turn.metrics",
         "agent.handoff",
@@ -221,10 +276,11 @@ def test_all_event_types_in_registry():
     stream_types = {
         "start",
         "media",
+        "dtmf",
         "playedStream",
         "clearedAudio",
         "stop",
     }
     expected = managed_types | stream_types
     assert set(_EVENT_REGISTRY.keys()) == expected
-    assert len(_EVENT_REGISTRY) == 25
+    assert len(_EVENT_REGISTRY) == 38

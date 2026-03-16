@@ -6,7 +6,7 @@ Usage (standalone)::
 
     app = VoiceApp()
 
-    @app.on("tool_call")
+    @app.on("tool.called")
     def on_tool_call(session, event: ToolCall):
         session.send_tool_result(event.id, {"ok": True})
 
@@ -20,7 +20,7 @@ Usage (FastAPI integration)::
     fastapi_app = FastAPI()
     voice = VoiceApp()
 
-    @voice.on("tool_call")
+    @voice.on("tool.called")
     def on_tool_call(session, event: ToolCall):
         session.send_tool_result(event.id, {"ok": True})
 
@@ -31,16 +31,26 @@ Usage (FastAPI integration)::
 """
 
 from plivo_agentstack.agent.app import VoiceApp
-from plivo_agentstack.agent.client import AgentClient
+from plivo_agentstack.agent.client import EAGERNESS_PRESETS, AgentClient
 from plivo_agentstack.agent.events import (
+    AgentFalseInterruption,
     AgentHandoff,
     AgentSessionEnded,
     AgentSessionStarted,
+    AgentSpeechCompleted,
+    AgentSpeechCreated,
+    AgentSpeechStarted,
+    AgentStateChanged,
+    AgentToolCompleted,
+    AgentToolFailed,
+    AgentToolStarted,
     CallTransferred,
     ClearedAudio,
     Dtmf,
+    DtmfSent,
     Error,
     Interruption,
+    LlmAvailabilityChanged,
     ParticipantAdded,
     ParticipantRemoved,
     PlayCompleted,
@@ -51,10 +61,12 @@ from plivo_agentstack.agent.events import (
     StreamStart,
     StreamStop,
     ToolCall,
+    ToolExecuted,
     TurnCompleted,
     TurnDetected,
     TurnMetrics,
     UserIdle,
+    UserStateChanged,
     VadSpeechStarted,
     VadSpeechStopped,
     VoicemailBeep,
@@ -62,35 +74,68 @@ from plivo_agentstack.agent.events import (
     parse_event,
 )
 from plivo_agentstack.agent.session import Session
+from plivo_agentstack.agent.tools import (
+    CollectAddress,
+    CollectCreditCard,
+    CollectDigits,
+    CollectDOB,
+    CollectEmail,
+    CollectName,
+    CollectPhone,
+    EndCall,
+    SendDtmf,
+    WarmTransfer,
+)
 
 __all__ = [
     # Core
     "VoiceApp",
     "Session",
     "AgentClient",
+    "EAGERNESS_PRESETS",
     # Event parsing
     "parse_event",
-    # Managed-mode events
+    # Session & lifecycle events
     "AgentSessionStarted",
     "AgentSessionEnded",
     "Error",
+    # Conversation events
     "ToolCall",
     "TurnCompleted",
     "Prompt",
     "Interruption",
     "AgentHandoff",
     "Dtmf",
+    "DtmfSent",
+    # Agent tool events
+    "AgentToolStarted",
+    "AgentToolCompleted",
+    "AgentToolFailed",
+    # Speech lifecycle events
+    "AgentSpeechCreated",
+    "AgentSpeechStarted",
+    "AgentSpeechCompleted",
+    "AgentFalseInterruption",
+    # State change events
+    "UserStateChanged",
+    "AgentStateChanged",
+    # Diagnostics
     "VadSpeechStarted",
     "VadSpeechStopped",
     "TurnDetected",
+    "TurnMetrics",
+    "ToolExecuted",
+    "LlmAvailabilityChanged",
+    # Voicemail
     "VoicemailDetected",
     "VoicemailBeep",
+    # Multi-party
     "ParticipantAdded",
     "ParticipantRemoved",
     "CallTransferred",
+    # Playback
     "PlayCompleted",
     "UserIdle",
-    "TurnMetrics",
     # Audio stream events
     "StreamStart",
     "StreamMedia",
@@ -98,4 +143,16 @@ __all__ = [
     "PlayedStream",
     "ClearedAudio",
     "StreamStop",
+    # Prebuilt tools (simple)
+    "EndCall",
+    "SendDtmf",
+    "WarmTransfer",
+    # Prebuilt tools (agent tools / server-side sub-agents)
+    "CollectEmail",
+    "CollectAddress",
+    "CollectPhone",
+    "CollectName",
+    "CollectDOB",
+    "CollectDigits",
+    "CollectCreditCard",
 ]

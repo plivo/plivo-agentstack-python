@@ -69,8 +69,8 @@ async def create_agent() -> str:
                 ],
             },
             tts={
-                "provider": "eleven_labs",
-                "voice": "rachel",
+                "provider": "elevenlabs",
+                "voice": "EXAVITQu4vr4xnSDxMaL",
             },
         )
         agent_uuid = resp["agent_uuid"]
@@ -83,7 +83,7 @@ async def create_agent() -> str:
 app = VoiceApp()
 
 
-@app.on("agent_session.started")
+@app.on("session.started")
 def on_session_started(session, event: AgentSessionStarted):
     logger.info(
         "Session started: session_id=%s call_id=%s caller=%s",
@@ -95,7 +95,7 @@ def on_session_started(session, event: AgentSessionStarted):
     session.data["caller"] = event.caller
 
 
-@app.on("tool_call")
+@app.on("tool.called")
 def on_tool_call(session, event: ToolCall):
     """Handle tool calls from the LLM."""
     logger.info("Tool call: name=%s args=%s", event.name, event.arguments)
@@ -114,7 +114,7 @@ def on_tool_call(session, event: ToolCall):
         session.send_tool_error(event.id, f"Unknown tool: {event.name}")
 
 
-@app.on("agent_session.ended")
+@app.on("session.ended")
 def on_session_ended(session, event: AgentSessionEnded):
     logger.info(
         "Session ended: duration=%ds turns=%s",

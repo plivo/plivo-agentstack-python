@@ -35,12 +35,12 @@ class Session:
     # --- Managed mode ---
 
     def send_tool_result(self, tool_call_id: str, result: Any) -> None:
-        """Send a tool_result response."""
-        self._enqueue({"type": "tool_result", "id": tool_call_id, "result": result})
+        """Send a tool.result response."""
+        self._enqueue({"type": "tool.result", "id": tool_call_id, "result": result})
 
     def send_tool_error(self, tool_call_id: str, error: str) -> None:
-        """Send a tool_error response."""
-        self._enqueue({"type": "tool_error", "id": tool_call_id, "error": error})
+        """Send a tool.error response."""
+        self._enqueue({"type": "tool.error", "id": tool_call_id, "error": error})
 
     # --- Text mode ---
 
@@ -111,6 +111,37 @@ class Session:
         """Inject context into the LLM conversation."""
         self._enqueue({"type": "agent_session.inject", "content": content})
 
+    def handoff(
+        self,
+        *,
+        system_prompt: str,
+        tools: list[dict] | None = None,
+        llm: dict | None = None,
+        summary: str | None = None,
+    ) -> None:
+        """Hand off to a different agent persona mid-call.
+
+        Atomically updates system_prompt, tools, and optionally the LLM model
+        in a single update. Conversation history is preserved. If summary is
+        provided, it's injected as context for the new agent.
+
+        Triggers an "agent.handoff" event on the customer WebSocket.
+
+        Args:
+            system_prompt: Instructions for the new agent persona.
+            tools: Tool definitions for the new agent. Pass [] to remove all tools.
+            llm: LLM config override (e.g. {"model": "gpt-4o"} for a more capable model).
+            summary: Optional conversation summary injected as context for the new agent.
+        """
+        update_kwargs: dict = {"system_prompt": system_prompt}
+        if tools is not None:
+            update_kwargs["tools"] = tools
+        if llm is not None:
+            update_kwargs["llm"] = llm
+        self.update(**update_kwargs)
+        if summary:
+            self.inject(summary)
+
     def speak(self, text: str) -> None:
         """Speak text to the caller (synthesized via the session's TTS provider)."""
         self._enqueue({"type": "agent_session.speak", "text": text})
@@ -136,17 +167,17 @@ class Session:
             msg["allow_interruption"] = False
         self._enqueue(msg)
 
-    def transfer_to_number(
+    def transfer(
         self,
         destination: str | list[str],
         *,
         dial_mode: str = "parallel",
         timeout: int = 30,
     ) -> None:
-        """Transfer the call to one or more phone numbers.
+        """Transfer the call to one or more destinations.
 
         Args:
-            destination: Phone number or list of numbers (E.164 format).
+            destination: Phone number or list of numbers.
             dial_mode: "parallel" (ring all at once, first to answer wins)
                        or "sequential" (try each in order).
             timeout: Ring timeout per destination in seconds.
@@ -160,32 +191,13 @@ class Session:
             "timeout": timeout,
         })
 
-    def transfer_to_sip(
-        self,
-        sip_uri: str,
-        *,
-        sip_headers: dict[str, str] | None = None,
-        timeout: int = 30,
-    ) -> None:
-        """Transfer the call to a SIP endpoint via Plivo Dial XML.
-
-        Plivo uses ``<Dial><User>sip_uri</User></Dial>`` internally.
+    def send_dtmf(self, digits: str) -> None:
+        """Send DTMF digits to the call (e.g., for IVR navigation).
 
         Args:
-            sip_uri: SIP URI (e.g. ``"sip:agent@phone.plivo.com"``).
-            sip_headers: Optional custom SIP headers (alphanumeric keys,
-                         max 24 chars each).
-            timeout: Ring timeout in seconds.
+            digits: String of DTMF digits to send (e.g. "123#", "*9").
         """
-        msg: dict = {
-            "type": "agent_session.transfer",
-            "destination": [sip_uri],
-            "sip": True,
-            "timeout": timeout,
-        }
-        if sip_headers:
-            msg["sip_headers"] = sip_headers
-        self._enqueue(msg)
+        self._enqueue({"type": "agent_session.send_dtmf", "digits": digits})
 
     def hangup(self) -> None:
         """End the call."""

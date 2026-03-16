@@ -9,12 +9,12 @@ def test_on_decorator_registers_handler():
     """@app.on('event_type') registers the handler in _handlers."""
     app = VoiceApp()
 
-    @app.on("tool_call")
+    @app.on("tool.called")
     def handle_tool_call(session, event):
         pass
 
-    assert "tool_call" in app._handlers
-    assert app._handlers["tool_call"] is handle_tool_call
+    assert "tool.called" in app._handlers
+    assert app._handlers["tool.called"] is handle_tool_call
 
 
 def test_on_event_registers_catch_all():
@@ -43,7 +43,7 @@ def test_multiple_handlers():
     """Different event types can each have their own handler."""
     app = VoiceApp()
 
-    @app.on("tool_call")
+    @app.on("tool.called")
     def handle_tool(session, event):
         pass
 
@@ -51,11 +51,11 @@ def test_multiple_handlers():
     def handle_turn(session, event):
         pass
 
-    @app.on("agent_session.started")
+    @app.on("session.started")
     def handle_start(session, event):
         pass
 
     assert len(app._handlers) == 3
-    assert app._handlers["tool_call"] is handle_tool
+    assert app._handlers["tool.called"] is handle_tool
     assert app._handlers["turn.completed"] is handle_turn
-    assert app._handlers["agent_session.started"] is handle_start
+    assert app._handlers["session.started"] is handle_start

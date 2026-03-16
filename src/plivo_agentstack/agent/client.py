@@ -10,6 +10,70 @@ from typing import Any
 
 from plivo_agentstack._http import HttpTransport
 
+# ---------------------------------------------------------------------------
+# semantic_vad eagerness presets
+# ---------------------------------------------------------------------------
+
+EAGERNESS_PRESETS = {
+    "low": {
+        "completed_turn_delay_ms": 500,
+        "incomplete_turn_delay_ms": 2500,
+        "uncertain_turn_delay_ms": 1000,
+        "min_interruption_duration_ms": 600,
+        "false_interruption_timeout_ms": 1200,
+    },
+    "medium": {
+        "completed_turn_delay_ms": 250,
+        "incomplete_turn_delay_ms": 1800,
+        "uncertain_turn_delay_ms": 900,
+        "min_interruption_duration_ms": 500,
+        "false_interruption_timeout_ms": 1000,
+    },
+    "high": {
+        "completed_turn_delay_ms": 150,
+        "incomplete_turn_delay_ms": 1400,
+        "uncertain_turn_delay_ms": 700,
+        "min_interruption_duration_ms": 300,
+        "false_interruption_timeout_ms": 750,
+    },
+    "auto": {},  # server defaults
+}
+
+
+def _expand_semantic_vad(value: Any) -> dict | None:
+    """Expand semantic_vad shorthand to full config dict.
+
+    Accepts:
+      - str:  "high" / "medium" / "low" / "auto" -> eagerness preset
+      - dict with "eagerness" key: preset + explicit overrides
+      - dict without "eagerness": raw values, passed through unchanged
+      - None: no semantic_vad config
+    """
+    if value is None:
+        return None
+    if isinstance(value, str):
+        preset = EAGERNESS_PRESETS.get(value)
+        if preset is None:
+            raise ValueError(
+                f"Unknown semantic_vad preset: {value!r}. "
+                f"Use one of: {', '.join(EAGERNESS_PRESETS)}"
+            )
+        return dict(preset)
+    if isinstance(value, dict):
+        eagerness = value.pop("eagerness", None)
+        if eagerness:
+            preset = EAGERNESS_PRESETS.get(eagerness)
+            if preset is None:
+                raise ValueError(
+                    f"Unknown eagerness: {eagerness!r}. "
+                    f"Use one of: {', '.join(EAGERNESS_PRESETS)}"
+                )
+            base = dict(preset)
+            base.update(value)  # explicit fields override preset
+            return base
+        return value  # raw dict, pass through unchanged
+    raise TypeError(f"semantic_vad must be str, dict, or None -- got {type(value).__name__}")
+
 
 class AgentResource:
     """Agent CRUD -- POST/GET/PATCH/DELETE /Agent
@@ -26,8 +90,13 @@ class AgentResource:
         """POST /Agent
 
         Required fields: ``agent_name``, ``websocket_url``.
+
+        ``semantic_vad`` accepts a preset string ("high", "medium", "low", "auto")
+        or a dict with optional ``eagerness`` key plus explicit overrides.
         Returns the created agent with ``agent_uuid`` as the identifier.
         """
+        if "semantic_vad" in kwargs:
+            kwargs["semantic_vad"] = _expand_semantic_vad(kwargs["semantic_vad"])
         return await self._http.request("POST", f"{self._prefix}/Agent", json=kwargs)
 
     async def get(self, agent_uuid: str) -> dict:
@@ -47,6 +116,8 @@ class AgentResource:
 
     async def update(self, agent_uuid: str, **kwargs: Any) -> dict:
         """PATCH /Agent/{agent_uuid}"""
+        if "semantic_vad" in kwargs:
+            kwargs["semantic_vad"] = _expand_semantic_vad(kwargs["semantic_vad"])
         return await self._http.request(
             "PATCH", f"{self._prefix}/Agent/{agent_uuid}", json=kwargs
         )
