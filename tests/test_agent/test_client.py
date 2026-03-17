@@ -172,8 +172,8 @@ SESSION_ID = "sess-001"
 
 
 async def test_session_list(mock_api, http_transport):
-    """GET /v1/Account/TESTAUTH123/Agent/{uuid}/Session lists sessions."""
-    mock_api.get(f"/v1/Account/TESTAUTH123/Agent/{AGENT_UUID}/Session").mock(
+    """GET /v1/Account/TESTAUTH123/AgentSession lists sessions."""
+    mock_api.get("/v1/Account/TESTAUTH123/AgentSession").mock(
         return_value=httpx.Response(
             200,
             json={
@@ -192,14 +192,42 @@ async def test_session_list(mock_api, http_transport):
         )
     )
     client = AgentClient(http_transport)
-    result = await client.sessions.list(AGENT_UUID, limit=10, offset=0)
+    result = await client.sessions.list(limit=10, offset=0)
     assert result["meta"]["total_count"] == 1
     assert result["objects"][0]["agent_session_id"] == SESSION_ID
 
 
+async def test_session_list_with_filters(mock_api, http_transport):
+    """GET /v1/Account/TESTAUTH123/AgentSession passes filter params."""
+    mock_api.get("/v1/Account/TESTAUTH123/AgentSession").mock(
+        return_value=httpx.Response(
+            200,
+            json={
+                "api_id": "abc-123",
+                "objects": [],
+                "meta": {
+                    "limit": 20,
+                    "offset": 0,
+                    "total_count": 0,
+                    "previous": None,
+                    "next": None,
+                },
+            },
+        )
+    )
+    client = AgentClient(http_transport)
+    result = await client.sessions.list(
+        agent_id=AGENT_UUID, phone_number="+14155551234"
+    )
+    assert result["meta"]["total_count"] == 0
+    request = mock_api.calls[0].request
+    assert request.url.params["agent_id"] == AGENT_UUID
+    assert request.url.params["phone_number"] == "+14155551234"
+
+
 async def test_session_get(mock_api, http_transport):
-    """GET /v1/Account/TESTAUTH123/Agent/{uuid}/Session/{session_id} gets session details."""
-    mock_api.get(f"/v1/Account/TESTAUTH123/Agent/{AGENT_UUID}/Session/{SESSION_ID}").mock(
+    """GET /v1/Account/TESTAUTH123/AgentSession/{session_id} gets session details."""
+    mock_api.get(f"/v1/Account/TESTAUTH123/AgentSession/{SESSION_ID}").mock(
         return_value=httpx.Response(
             200,
             json={
@@ -212,7 +240,7 @@ async def test_session_get(mock_api, http_transport):
         )
     )
     client = AgentClient(http_transport)
-    result = await client.sessions.get(AGENT_UUID, SESSION_ID)
+    result = await client.sessions.get(SESSION_ID)
     assert result["agent_session_id"] == SESSION_ID
     assert result["duration_seconds"] == 120
     assert result["turn_count"] == 5
