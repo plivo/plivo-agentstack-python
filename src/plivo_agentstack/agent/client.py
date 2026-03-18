@@ -220,25 +220,37 @@ class NumberResource:
 
 
 class SessionResource:
-    """Session history -- list and get agent sessions."""
+    """Session history -- list and get agent sessions.
+
+    Sessions are account-scoped (not nested under an agent).
+    Use ``agent_id`` query param to filter by agent.
+
+    Session IDs accept both raw UUIDs and ``as_<uuid>`` prefix format.
+    """
 
     def __init__(self, http: HttpTransport, prefix: str) -> None:
         self._http = http
         self._prefix = prefix
 
-    async def list(self, agent_uuid: str, **params: Any) -> dict:
-        """GET /Agent/{agent_uuid}/Session -- list sessions.
+    async def list(self, **params: Any) -> dict:
+        """GET /AgentSession -- paginated list.
 
-        Optional query params: limit, offset, sort_by, sort_order, agent_mode.
+        Optional query params: limit, offset, sort_by, sort_order,
+        agent_id, agent_mode, call_uuid, phone_number,
+        ended_at__gte, ended_at__lte, created_at__gte, created_at__lte,
+        duration__gte, duration__lte.
+
+        Returns ``{"api_id": "...", "objects": [...],
+        "meta": {"limit", "offset", "total_count", "previous", "next"}}``.
         """
         return await self._http.request(
-            "GET", f"{self._prefix}/Agent/{agent_uuid}/Session", params=params
+            "GET", f"{self._prefix}/AgentSession", params=params
         )
 
-    async def get(self, agent_uuid: str, session_id: str) -> dict:
-        """GET /Agent/{agent_uuid}/Session/{session_id} -- get session details."""
+    async def get(self, session_id: str) -> dict:
+        """GET /AgentSession/{session_id} -- get session details."""
         return await self._http.request(
-            "GET", f"{self._prefix}/Agent/{agent_uuid}/Session/{session_id}"
+            "GET", f"{self._prefix}/AgentSession/{session_id}"
         )
 
 
