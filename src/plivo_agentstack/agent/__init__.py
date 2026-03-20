@@ -56,6 +56,7 @@ from plivo_agentstack.agent.events import (
     PlayCompleted,
     PlayedStream,
     Prompt,
+    SessionUsage,
     StreamDtmf,
     StreamMedia,
     StreamStart,
@@ -65,6 +66,7 @@ from plivo_agentstack.agent.events import (
     TurnCompleted,
     TurnDetected,
     TurnMetrics,
+    UserBackchannel,
     UserIdle,
     UserStateChanged,
     VadSpeechStarted,
@@ -136,6 +138,10 @@ __all__ = [
     # Playback
     "PlayCompleted",
     "UserIdle",
+    # Adaptive interruption
+    "UserBackchannel",
+    # Usage
+    "SessionUsage",
     # Audio stream events
     "StreamStart",
     "StreamMedia",

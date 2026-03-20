@@ -53,10 +53,14 @@ from plivo_agentstack.agent import (
     DtmfSent,
     EndCall,
     Interruption,
+    LlmAvailabilityChanged,
     PlayCompleted,
+    SessionUsage,
     ToolCall,
+    ToolExecuted,
     TurnCompleted,
     TurnMetrics,
+    UserBackchannel,
     UserIdle,
     UserStateChanged,
     VoiceApp,
@@ -271,8 +275,8 @@ async def init_agent():
         #       "uncertain_turn_delay_ms": 800,         # delay when uncertain
         #       "min_interruption_duration_ms": 300,    # sustained speech before barge-in
         #       "false_interruption_timeout_ms": 800,   # PAUSE -> COMMIT/RESUME wait
-        #       "completed_turn_threshold": 0.7,        # EOU probability for complete
-        #       "incomplete_turn_threshold": 0.3,       # EOU probability for incomplete
+        #       "completed_turn_threshold": 0.7,        # turn detection probability for complete
+        #       "incomplete_turn_threshold": 0.3,       # turn detection probability for incomplete
         #   }
         semantic_vad="high",
 
@@ -591,21 +595,44 @@ def on_user_idle(session, event: UserIdle):
 
 @app.on("turn.metrics")
 def on_metrics(session, event: TurnMetrics):
-    """Per-turn latency metrics (opt-in via metrics_events=True)."""
-    print(
-        f"  Metrics [turn {event.turn_number}]: "
-        f"perceived={event.user_perceived_ms}ms "
-        f"stt={event.stt_delay_ms}ms "
-        f"llm_ttft={event.llm_ttft_ms}ms "
-        f"tts={event.tts_pipeline_ms}ms "
-        f"method={event.turn_method}"
-    )
+    """Per-turn latency metrics -- comprehensive pipeline observability.
+
+    Covers all pipeline metrics classes:
+    - LLMMetrics (13 fields), STTMetrics (9), TTSMetrics (14), VADMetrics (5),
+      Turn detection (6), InterruptionMetrics (8), RealtimeModelMetrics (15),
+      ChatMessage.metrics (8 SDK-measured fields).
+    """
+    parts = [
+        f"perceived={event.user_perceived_ms}ms",
+        f"stt={event.stt_delay_ms}ms",
+        f"turn={event.turn_decision_ms}ms",
+        f"llm_ttft={event.llm_ttft_ms}ms",
+        f"tts_ttfb={event.tts_ttfb_ms}ms",
+        f"method={event.turn_method}",
+    ]
+    if event.llm_tokens_per_second:
+        parts.append(f"tok/s={event.llm_tokens_per_second}")
+    if event.llm_cache_hit_ratio:
+        parts.append(f"cache={event.llm_cache_hit_ratio}")
+    if event.endpointing_min_delay_ms is not None:
+        parts.append(f"ep_min={event.endpointing_min_delay_ms}ms")
+        parts.append(f"ep_max={event.endpointing_max_delay_ms}ms")
+    if event.llm_cancelled:
+        parts.append("llm_cancelled")
+    if event.tts_cancelled:
+        parts.append("tts_cancelled")
+    if event.num_interruptions:
+        parts.append(f"interruptions={event.num_interruptions}")
+    if event.num_backchannels:
+        parts.append(f"backchannels={event.num_backchannels}")
+    print(f"  Metrics [turn {event.turn_number}]: {' '.join(parts)}")
 
 
 @app.on("turn.completed")
 def on_turn(session, event: TurnCompleted):
-    print(f"  User:  {event.user_text}")
-    print(f"  Agent: {event.agent_text}")
+    prefix = "[agent-first] " if event.agent_first else ""
+    print(f"  {prefix}User:  {event.user_text}")
+    print(f"  {prefix}Agent: {event.agent_text}")
 
 
 @app.on("user.dtmf")
@@ -672,6 +699,83 @@ def on_speech_completed(session, event: AgentSpeechCompleted):
 def on_false_interruption(session, event):
     """Brief speech during agent playback was classified as noise/echo."""
     print("  False interruption -- agent resumed")
+
+
+@app.on("tool.executed")
+def on_tool_executed(session, event: ToolExecuted):
+    """Tool call results -- shows what tools were called and their outputs."""
+    for call in event.calls:
+        output = call.get("output", "")
+        is_error = call.get("is_error", False)
+        status = "ERROR" if is_error else "ok"
+        print(
+            f"  Tool executed: {call['name']}({call.get('arguments', '')}) "
+            f"[{status}] {output[:100]}"
+        )
+
+
+@app.on("user.backchannel")
+def on_backchannel(session, event: UserBackchannel):
+    """Overlapping speech detected during agent playback (adaptive mode only).
+
+    is_interruption=True means the user is genuinely interrupting.
+    is_interruption=False means backchannel (e.g., "uh-huh", "yeah").
+    """
+    label = "INTERRUPTION" if event.is_interruption else "backchannel"
+    print(
+        f"  Backchannel: {label} "
+        f"(prob={event.probability}, delay={event.detection_delay_ms}ms)"
+    )
+
+
+@app.on("session.usage")
+def on_usage(session, event: SessionUsage):
+    """Cumulative session usage -- full per-model breakdown for billing/cost tracking.
+
+    Each model entry contains ALL fields from the model_dump().
+    LLM: input_tokens, input_cached_tokens, output_tokens, session_duration, etc.
+    TTS: characters_count, audio_duration, input/output_tokens, etc.
+    STT: audio_duration, input/output_tokens, etc.
+    Interruption: total_requests.
+    """
+    if not event.models:
+        return
+    parts = []
+    for m in event.models:
+        t = m.get("type", "")
+        provider = m.get("provider", "?")
+        model = m.get("model", "?")
+        if t == "llm_usage":
+            cached = m.get("input_cached_tokens", 0)
+            parts.append(
+                f"LLM({provider}/{model}): "
+                f"{m.get('input_tokens', 0)}in/{m.get('output_tokens', 0)}out "
+                f"cached={cached}"
+            )
+        elif t == "tts_usage":
+            parts.append(
+                f"TTS({provider}/{model}): "
+                f"{m.get('characters_count', 0)} chars, "
+                f"{m.get('audio_duration', 0):.1f}s audio"
+            )
+        elif t == "stt_usage":
+            parts.append(
+                f"STT({provider}/{model}): "
+                f"{m.get('audio_duration', 0):.1f}s audio"
+            )
+        elif t == "interruption_usage":
+            parts.append(
+                f"Interruption({provider}): {m.get('total_requests', 0)} reqs"
+            )
+    if parts:
+        print(f"  Usage: {' | '.join(parts)}")
+
+
+@app.on("llm.availability_changed")
+def on_llm_availability(session, event: LlmAvailabilityChanged):
+    """LLM fallback provider went up/down -- useful for monitoring fallback health."""
+    status = "available" if event.available else "UNAVAILABLE"
+    print(f"  LLM availability: {event.llm} -> {status}")
 
 
 @app.on("session.error")

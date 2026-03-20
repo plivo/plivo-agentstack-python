@@ -173,6 +173,7 @@ class Session:
         *,
         dial_mode: str = "parallel",
         timeout: int = 30,
+        caller_id: str | None = None,
     ) -> None:
         """Transfer the call to one or more destinations.
 
@@ -181,15 +182,20 @@ class Session:
             dial_mode: "parallel" (ring all at once, first to answer wins)
                        or "sequential" (try each in order).
             timeout: Ring timeout per destination in seconds.
+            caller_id: Optional caller ID override for the outbound leg.
+                       Defaults to the agent's plivo_number if not set.
         """
         if isinstance(destination, str):
             destination = [destination]
-        self._enqueue({
+        msg: dict = {
             "type": "agent_session.transfer",
             "destination": destination,
             "dial_mode": dial_mode,
             "timeout": timeout,
-        })
+        }
+        if caller_id:
+            msg["caller_id"] = caller_id
+        self._enqueue(msg)
 
     def send_dtmf(self, digits: str) -> None:
         """Send DTMF digits to the call (e.g., for IVR navigation).

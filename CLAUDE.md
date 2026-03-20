@@ -88,6 +88,8 @@ All WebSocket events use dotted naming convention:
 | Participant removed | `participant.removed` | `ParticipantRemoved` |
 | Call transferred | `call.transferred` | `CallTransferred` |
 | Play completed | `play.completed` | `PlayCompleted` |
+| User backchannel | `user.backchannel` | `UserBackchannel` |
+| Session usage | `session.usage` | `SessionUsage` |
 
 Audio stream events use the Plivo protocol: `start`, `media`, `dtmf`, `playedStream`, `clearedAudio`, `stop`.
 
