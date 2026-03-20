@@ -100,9 +100,9 @@ async def init_agent():
         # Add it to your LLM's tool list. When your LLM calls extend_wait,
         # send {"type": "agent_session.extend_wait"} on the WS to extend the timer.
         idle_timeout={
-            "no_response_timeout_s": 15,
+            "no_response_timeout_ms": 15000,
             "reminder_message": "Are you still there? Would you like to place an order?",
-            "extended_wait_time_s": 30,
+            "extended_wait_time_ms": 30000,
             "max_retries": 3,
             "hangup_message": "I haven't heard from you. Goodbye!",
         },

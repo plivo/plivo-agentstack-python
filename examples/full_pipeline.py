@@ -306,11 +306,11 @@ async def init_agent():
         #   3. Hang up with a goodbye message
         # If reminder_message is null/omitted, the LLM generates a contextual nudge.
         # The user can say "give me more time" -- the LLM calls the built-in
-        # extend_wait tool, which extends the timer to extended_wait_time_s.
+        # extend_wait tool, which extends the timer to extended_wait_time_ms.
         idle_timeout={
-            "no_response_timeout_s": 15,       # seconds of silence before first reminder (1-120)
+            "no_response_timeout_ms": 15000,    # ms of silence before first reminder (1000-120000)
             # "reminder_message": "Are you still there?",  # fixed text; omit for LLM-generated nudge
-            "extended_wait_time_s": 30,         # seconds to wait after user asks for more time (1-300)
+            "extended_wait_time_ms": 30000,     # ms to wait after user asks for more time (1000-300000)
             "max_retries": 3,                   # reminder attempts before hangup (0-10)
             "hangup_message": "I haven't heard from you, so I'll end the call. Goodbye.",
         },
@@ -339,7 +339,7 @@ async def init_agent():
 
         # Audio settings
         # audio_format="pcm_16k",          # pcm_16k (default)
-        # plc_enabled=False,               # packet loss concealment (default: false)
+        # plc_enabled=True,                # packet loss concealment (default: true)
         # comfort_noise_enabled=True,       # comfort noise during silence (default: true)
         # cng_divisor=2800,                # comfort noise amplitude (default: 2800, higher = quieter)
         # noise_cancellation=False,         # client-side noise cancellation (default: false)
